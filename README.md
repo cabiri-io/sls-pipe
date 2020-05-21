@@ -99,3 +99,87 @@ export const handler = serverlessPipe({config: {}})
 // this is separate file where you build your application  ​
 
 ```
+
+
+```ts
+type InventoryRepository = {
+    get(sku: string): number
+    update(sku: string, stockLevel: number)
+}
+
+// aws
+const dynamoDbInventoryRepository = (awsClient: AWSClient): InventoryRepository => ({
+    get(sku: string) {
+        awsClient.get()
+    }
+    update(sku: string) {
+        awsClient.get()
+    }
+})
+
+// google cloud firebase 
+const firebaseInventoryRepository = (firebaseClient: GCloudFirebase): InventoryRepository => ({
+    get(sku: string) {
+        firebase.get()
+    }
+    update(sku: string) {
+        firebase.get()
+    }
+})
+
+import {firebaseClient} from 'google-client'
+
+type Dependency<T> = {
+    instance: T,
+    name: string // defines what name in map of dependecies it is being mapped
+}
+// google 
+slsEnv()
+    .global(() => {
+        return {
+            instance: firebaseClient,
+            name: 'firebaseClient'
+        }
+    })
+    // how do you use arrow function because eveyone loves them
+    .global(function inventoryRepository({firebaseClient} : Dependecies) => {
+        return firebaseInventoryRepository(firebaseClient)
+    })
+    .payload(() => {
+        return {
+            sku: req.path.sku_id
+        }: GetInventory
+    })
+    //  google cloud
+    .app((payload, {inventoryRepository}: Dependecies) => {
+        return app().run(payload, {inventoryRepository})
+    })
+    .run(req, res)
+    
+// aws 
+import AWS from 'aws-sdk'
+
+slsEnv()
+    .global(function inventoryRepository() => {
+        return dynamoDbInventoryRepository(new AWS.DynamoDB())
+    })
+    .payload(() => {
+        return {
+            sku: event.pathVariables.sku_id
+        }: GetInventory
+    })
+    //  google cloud
+    .app((payload, {inventoryRepository}: Dependecies) => {
+        return app().run(payload, {inventoryRepository})
+    })
+    .run(event, context)
+    
+
+// tests
+
+slsEnv.run({what we think is right})
+
+// ci
+
+real lambda 
+```
