@@ -10,5 +10,9 @@
     "jest": "^26.0.1",
     "ts-jest": "^26.0.0",
     "typescript": "^3.9.2"
+  },
+  "dependencies": {
+    "fp-ts": "^2.6.1",
+    "pino": "^6.2.1"
   }
 }
