@@ -1,7 +1,9 @@
+type ActionFunction<P, D, R> = (payload: P, dependencies: D) => R
+
 // configuration I want to be able to debug invocation
 type Application<P, D, R> = {
   pre(actionContextFunction: ActionContextFunction<P, D>): Application<P, D, R>
-  action(): Application<P, D, R>
+  action(actionFunction: ActionFunction<P, D, R>): Application<P, D, R> | never
   post(): Application<P, D, R>
   run(payload: P, dependencies: D): Promise<R>
 }
@@ -18,35 +20,42 @@ type PreAction<P, D> = {
   // maybe we have type
 }
 
+export class ApplicationError extends Error {
+  public type: string = 'ApplicationError'
+}
+
 // allow to configure the application e.g. log each entry
-export function Application<P, D, R>(): Application<P, D, R> {
+export function application<P, D, R>(): Application<P, D, R> {
   // maybe instead of using array we an explore using Task concept and
   // and instead we can just compose function
 
   const preActions: Array<PreAction<P, D>> = []
+  let mainAction: ActionFunction<P, D, R>
   return {
     pre(actionFunction) {
       // allow to push logger
       preActions.push({ func: actionFunction })
       return this
     },
-    action() {
+
+    action(actionFunction) {
+      //@ts-ignore
+      if (mainAction) throw new ApplicationError('you can only have a single action')
+      mainAction = actionFunction
       return this
     },
+
     post() {
       return this
     },
+
     run(payload, dependencies) {
       return (
         preActions
           // we work with promises because this allows us easy capture all the async stuff
           .reduce((acc, v) => acc.then(r => (v.func(r), r)), Promise.resolve({ payload, dependencies }))
-          .then
           // do action now will work with pre
-          ()
-          .then
-          // do post actions
-          ()
+          .then(({ payload, dependencies }) => mainAction(payload, dependencies))
       )
     }
   }

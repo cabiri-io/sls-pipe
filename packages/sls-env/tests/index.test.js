@@ -1,0 +1,1 @@
+describe('serverless environment', () => {})

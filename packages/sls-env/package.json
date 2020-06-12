@@ -1,5 +1,5 @@
 {
-  "name": "@cabiri-io/sls-app",
+  "name": "@cabiri-io/sls-env",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
