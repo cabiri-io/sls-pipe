@@ -1,5 +1,3 @@
-
-
 A sketch of domain langauage
 
 ```ts
@@ -39,8 +37,8 @@ export const handler = serverlessPipe({config: {}})
   })
   // what if you have dependencies dependent on dependencies ?
   // do we run them in order and pass dependencies so they can create dependencies
-  // this start what application needs to run 
-  // .global 
+  // this start what application needs to run
+  // .global
   // {depedendencies: {commercetoolsClient, awsClient}}
   .singleton(commercetoolClient)
   // todoRepositoryClient(awsClient) - level of abstraction is left to developer
@@ -59,13 +57,13 @@ export const handler = serverlessPipe({config: {}})
   // SSM - not important (concept)
   .refresh(() => {
     return {
-      factory: () => {}, 
+      factory: () => {},
       interval: 1000
     }
   })
   // this is very specific to the environment and converts AWS events or google or azure to the typed object representation
-  // order does not matter 
-  // 
+  // order does not matter
+  //
   .payload((event, context) => {
     event.pathVariables
     event.queryParams
