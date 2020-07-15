@@ -1,0 +1,50 @@
+name: Pull Request
+
+on:
+  pull_request:
+    branches:
+      - master
+    types: [opened, reopened, synchronize]
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # todo: run with matrix of supported versions
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      - name: get yarn cache
+        timeout-minutes: 1
+        id: yarn-cache
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - uses: actions/cache@v1
+        with:
+          path: ${{ steps.yarn-cache.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashfiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: check format
+        run: yarn prettify
+
+      - name: check lint
+        run: yarn lint
+
+      - name: build packages
+        run: yarn build
+
+      - name: test
+        run: yarn test
+        env:
+          CI: true

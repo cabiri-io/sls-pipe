@@ -1,16 +1,14 @@
 {
   "name": "@cabiri-io/sls-app",
-  "version": "1.0.0",
-  "main": "index.js",
+  "version": "0.0.1",
+  "author": "Cabiri <opensource@cabiri.io>",
   "license": "MIT",
-  "scripts": {
-    "test": "jest"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cabiri-io/sls-pipe",
+    "directory": "packages/sls-app"
   },
-  "devDependencies": {
-    "@types/jest": "^26.0.0",
-    "jest": "^26.0.1",
-    "jest-extended": "^0.11.5",
-    "ts-jest": "^26.1.0",
-    "typescript": "^3.9.5"
-  }
+  "homepage": "https://github.com/cabiri-io/sls-pipe#readme",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts"
 }

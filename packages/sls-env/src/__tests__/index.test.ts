@@ -1,30 +1,37 @@
-import { environment } from '../src'
+// eslint-disable-next-line eslint-comments/disable-enable-pair
+/* eslint-disable @typescript-eslint/ban-types */
+import { environment } from '..'
 describe('serverless environment', () => {
   // here we will have adapter
   // but for testing it should be enough for time being
 
-  type EmptyEvent = {}
-  type EmptyContext = {}
-  it('supports application', () =>
-    environment<EmptyEvent, EmptyContext, void, void, string>()
+  it('supports application', () => {
+    type EmptyEvent = {}
+    type EmptyContext = {}
+
+    return environment<EmptyEvent, EmptyContext, void, void, string>()
       .app(() => 'hello world!')
       .start({}, {})
-      .then(result => expect(result).toBe('hello world!')))
+      .then(result => expect(result).toBe('hello world!'))
+  })
 
   type MessageEvent = { message: string }
   type NameContext = { name: string }
   type EventPayload = { event: MessageEvent; context: NameContext }
-  it('supports passing an event and context to application', () =>
-    environment<MessageEvent, NameContext, void, EventPayload, string>()
+  // eslint-disable-next-line arrow-body-style
+  it('supports passing an event and context to application', () => {
+    return environment<MessageEvent, NameContext, void, EventPayload, string>()
       .app(({ payload: { event, context } }) => `${event.message} ${context.name}!`)
       .start({ message: 'hello' }, { name: 'world' })
-      .then(result => expect(result).toBe('hello world!')))
+      .then(result => expect(result).toBe('hello world!'))
+  })
 
-  type BuildMessage = (message: string, name: string) => string
-  type BuildMessageDependencies = {
-    buildMessage: BuildMessage
-  }
   it('supports adding dependencies to environment', () => {
+    type BuildMessage = (message: string, name: string) => string
+    type BuildMessageDependencies = {
+      buildMessage: BuildMessage
+    }
+
     const buildMessage: BuildMessage = (message, name) => `${message} ${name}!`
 
     return environment<MessageEvent, NameContext, BuildMessageDependencies, EventPayload, string>()

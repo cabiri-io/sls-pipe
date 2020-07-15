@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+  },
+  "files": [],
+  "include": [],
+  "references": [
+    {"path": "./packages/sls-app"},
+    {"path": "./packages/sls-env"},
+  ]
+}

@@ -1,4 +1,4 @@
-import { application, ApplicationError } from '../src'
+import { ApplicationError, application } from '..'
 
 describe('application flow', () => {
   describe('action', () => {
@@ -31,7 +31,7 @@ describe('application flow', () => {
         .then(() => {
           expect(preAction).toHaveBeenCalledWith({ payload: 'hello', dependencies: { appendString: 'world' } })
           expect(action).toHaveBeenCalledWith('hello', { appendString: 'world' })
-          //@ts-ignore
+          //@ts-expect-error
           expect(preAction).toHaveBeenCalledBefore(action)
         })
     })
@@ -50,9 +50,9 @@ describe('application flow', () => {
           expect(preAction1).toHaveBeenCalledWith({ payload: 'hello', dependencies: { appendString: 'world' } })
           expect(preAction2).toHaveBeenCalledWith({ payload: 'hello', dependencies: { appendString: 'world' } })
           expect(action).toHaveBeenCalledWith('hello', { appendString: 'world' })
-          //@ts-ignore
+          //@ts-expect-error
           expect(preAction1).toHaveBeenCalledBefore(preAction2)
-          //@ts-ignore
+          //@ts-expect-error
           expect(preAction2).toHaveBeenCalledBefore(action)
         })
     })
