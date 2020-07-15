@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "commonjs",
+    // Object.fromEntries
+    "lib": ["dom", "es2017", "es2019.object"],
+    "declaration": true,
+    "isolatedModules": true,
+    "importsNotUsedAsValues": "error",
+
+    "strict": true,
+
+    /* Additional Checks */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+
+    /* Module Resolution Options */
+    "moduleResolution": "node",
+    "esModuleInterop": false,
+    "resolveJsonModule": true
+  },
+  "exclude": ["**/__tests__/**/*", "**/dist/**/*"]
+}

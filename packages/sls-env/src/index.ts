@@ -1,10 +1,12 @@
-//
+// eslint-disable-next-line eslint-comments/disable-enable-pair
+/* eslint-disable @typescript-eslint/ban-types,@typescript-eslint/no-unused-vars */
 
 type PayloadConstructor<E, C, R> = (event: E, context: C) => R
 // but that makes it very specific to even and context
 // so maybe we extract Request to be Request {event, context}
 // or maybe request becomes something abstract
 // what does Request mean in context of async event
+//@ts-expect-error
 type Event<I, C, O> = {
   input: I
   context?: C
@@ -35,6 +37,7 @@ type SlsEnvironmentConfig = {}
 // with this level abstraction we would need to have awsEnv
 // with this level abstraction we would need to have expressEnv
 // with this level abstraction we would need to have googleFunctionEnv
+//@ts-expect-error
 export const environment = <E, C, D, P, R>(config?: SlsEnvironmentConfig): SlsEnvironment<E, C, D, P, R> => {
   let appConstructor: AppConstructor<P, D, R>
   // at the moment we are cheating

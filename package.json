@@ -1,9 +1,20 @@
 {
   "engines": {
-    "node": "0.12"
+    "node": ">=0.10"
   },
   "private": true,
   "scripts": {
+    "clean": "git clean -dfqX -- ./node_modules **/{dist,node_modules}/ ./packages/*/tsconfig*tsbuildinfo ./coverage .eslintcache",
+    "build": "tsc --build tsconfig.build.json",
+    "build:clean": "tsc --build tsconfig.build.json --clean",
+    "watch": "tsc --build tsconfig.build.json --watch",
+    "postinstall": "lerna run prepare && npm run build",
+    "test": "jest --verbose",
+    "test:clean": "jest --clearCache",
+    "test:watch": "jest --verbose --watchAll",
+    "coverage": "npm test -- --coverage",
+    "lint": "eslint . --cache --ext js,jsx,ts,tsx,md",
+    "lint:prettier": "prettier '**/*.{md,yml,yaml}' --write --ignore-path .gitignore",
     "commit": "git-cz",
     "pretty-quick": "pretty-quick",
     "prettify:fix": "prettier --write 'packages/**/*.{js,ts}'",
@@ -13,12 +24,30 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@babel/core": "^7.9.6",
-    "@babel/preset-env": "^7.9.6",
-    "@babel/preset-typescript": "^7.9.0",
-    "babel-jest": "^26.0.1",
+    "@types/jest": "^26.0.4",
+    "@typescript-eslint/eslint-plugin": "^3.6.1",
+    "@typescript-eslint/parser": "^3.6.1",
+    "codecov": "^3.7.0",
+    "eslint": "^7.4.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-babel": "^5.3.1",
+    "eslint-plugin-eslint-comments": "^3.2.0",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-jest": "^23.18.0",
+    "eslint-plugin-markdown": "^1.0.2",
+    "eslint-plugin-prettier": "^3.1.4",
     "jest": "^26.0.1",
+    "jest-config": "^26.1.0",
+    "jest-extended": "^0.11.5",
+    "lerna": "^3.22.1",
     "prettier": "^2.0.5",
-    "pretty-quick": "^2.0.1"
+    "pretty-quick": "^2.0.1",
+    "ts-jest": "^26.1.2",
+    "typescript": "^3.9.6"
+  },
+  "jest": {
+    "projects": [
+      "<rootDir>/packages/*"
+    ]
   }
 }

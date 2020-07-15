@@ -1,5 +1,3 @@
-module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
-  setupFilesAfterEnv: ['jest-extended']
-}
+const config = require('../../jest.config.base')
+
+module.exports = config
