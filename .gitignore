@@ -18,3 +18,8 @@ node_modules/
 .idea/
 
 .eslintcache
+
+.pnp.js
+
+.yarn/cache
+.yarn/*.gz

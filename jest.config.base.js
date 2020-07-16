@@ -3,13 +3,16 @@ const { defaults } = require('jest-config')
 
 module.exports = {
   testEnvironment: 'node',
-  preset: 'ts-jest',
   testMatch: null,
+  // https://github.com/kulshekhar/ts-jest/issues/1343
+  // https://github.com/kulshekhar/ts-jest/issues/1134
+  transform: {
+    '.ts': require.resolve('ts-jest')
+  },
   testRegex: '/__tests__/.*\\.test\\.ts$',
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
   moduleFileExtensions: [...defaults.moduleFileExtensions, 'ts', 'tsx'],
   setupFilesAfterEnv: ['jest-extended'],
-  moduleNameMapper: {},
   clearMocks: true,
   globals: {
     'ts-jest': {

@@ -10,5 +10,10 @@
   },
   "homepage": "https://github.com/cabiri-io/sls-pipe#readme",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts"
+  "types": "dist/index.d.ts",
+  "devDependencies": {
+    "@types/jest": "^26.0.4",
+    "jest-extended": "^0.11.5",
+    "ts-jest": "^26.1.2"
+  }
 }
