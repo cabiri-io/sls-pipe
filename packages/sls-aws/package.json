@@ -1,22 +1,21 @@
 {
-  "name": "@cabiri-io/sls-env",
+  "name": "@cabiri-io/sls-aws",
   "version": "0.0.1",
   "author": "Cabiri <opensource@cabiri.io>",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/cabiri-io/sls-env",
-    "directory": "packages/sls-env"
+    "directory": "packages/sls-aws"
   },
   "homepage": "https://github.com/cabiri-io/sls-pipe#readme",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "lodash.camelcase": "^4.3.0"
+    "@cabiri-io/sls-env": "file:../sls-env"
   },
   "devDependencies": {
-    "@types/lodash.camelcase": "^4.3.6",
-    "@types/lodash.snakecase": "^4.1.6",
-    "lodash.snakecase": "^4.1.1"
+    "@types/aws-lambda": "^8.10.59"
   }
+
 }

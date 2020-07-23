@@ -39,7 +39,7 @@ export function application<P, D, R>(): Application<P, D, R> {
     },
 
     action(actionFunction) {
-      //@ts-expect-error
+      //@ts-ignore
       if (mainAction) throw new ApplicationError('you can only have a single action')
       mainAction = actionFunction
       return this
