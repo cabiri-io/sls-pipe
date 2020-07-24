@@ -1,11 +1,11 @@
 {
   "name": "@cabiri-io/sls-aws",
-  "version": "0.0.4",
+  "version": "0.0.1",
   "author": "Cabiri <opensource@cabiri.io>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/cabiri-io/sls-env",
+    "url": "github:cabiri-io/sls-env",
     "directory": "packages/sls-aws"
   },
   "homepage": "https://github.com/cabiri-io/sls-pipe#readme",
