@@ -30,7 +30,7 @@ export function application<P, D, R>(): Application<P, D, R> {
   // and instead we can just compose function
 
   const preActions: Array<PreAction<P, D>> = []
-  let mainAction: ActionFunction<P, D, R>
+  let mainAction: ActionFunction<P, D, R> | undefined
   return {
     pre(actionFunction) {
       // allow to push logger
@@ -39,7 +39,6 @@ export function application<P, D, R>(): Application<P, D, R> {
     },
 
     action(actionFunction) {
-      //@ts-ignore
       if (mainAction) throw new ApplicationError('you can only have a single action')
       mainAction = actionFunction
       return this
@@ -55,6 +54,7 @@ export function application<P, D, R>(): Application<P, D, R> {
           // we work with promises because this allows us easy capture all the async stuff
           .reduce((acc, v) => acc.then(r => (v.func(r), r)), Promise.resolve({ payload, dependencies }))
           // do action now will work with pre
+          //@ts-expect-error fix by checking if main action is present through tests
           .then(({ payload, dependencies }) => mainAction(payload, dependencies))
       )
     }
