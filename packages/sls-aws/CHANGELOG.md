@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.0.5](https://github.com/cabiri-io/sls-env/compare/@cabiri-io/sls-aws@0.0.4...@cabiri-io/sls-aws@0.0.5) (2020-07-24)
+
+
+### Features
+
+* configure publish registry in learrn and mark package as restricted ([d5dc73c](https://github.com/cabiri-io/sls-env/commit/d5dc73c507e463f7ed0233a4c29b4b750250b49a))
+
+
+
+
+
 ## [0.0.4](https://github.com/cabiri-io/sls-env/compare/@cabiri-io/sls-aws@0.0.3...@cabiri-io/sls-aws@0.0.4) (2020-07-24)
 
 
