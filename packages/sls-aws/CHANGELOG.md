@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.0.4](https://github.com/cabiri-io/sls-env/compare/@cabiri-io/sls-aws@0.0.3...@cabiri-io/sls-aws@0.0.4) (2020-07-24)
+
+
+### Features
+
+* replace url with github ([d5f9d08](https://github.com/cabiri-io/sls-env/commit/d5f9d081b5b1f8970eb40c0a7157d1dafdff1bfa))
+
+
+
+
+
 ## [0.0.3](https://github.com/cabiri-io/sls-env/compare/@cabiri-io/sls-aws@0.0.2...@cabiri-io/sls-aws@0.0.3) (2020-07-24)
 
 
