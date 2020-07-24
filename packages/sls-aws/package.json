@@ -5,8 +5,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "github:cabiri-io/sls-env",
+    "url": "ssh://git@github.com/cabiri-io/sls-env",
     "directory": "packages/sls-aws"
+  },
+  "publishConfig": {
+    "registry":"https://npm.pkg.github.com/"
   },
   "homepage": "https://github.com/cabiri-io/sls-pipe#readme",
   "main": "dist/index.js",
