@@ -5,7 +5,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "ssh://git@github.com/cabiri-io/sls-env",
+    "url": "github:cabiri-io/sls-env",
     "directory": "packages/sls-aws"
   },
   "publishConfig": {
