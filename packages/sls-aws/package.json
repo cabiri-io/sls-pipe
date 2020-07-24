@@ -1,6 +1,6 @@
 {
   "name": "@cabiri-io/sls-aws",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "author": "Cabiri <opensource@cabiri.io>",
   "license": "MIT",
   "repository": {
@@ -9,7 +9,7 @@
     "directory": "packages/sls-aws"
   },
   "publishConfig": {
-    "registry":"https://npm.pkg.github.com/"
+    "registry": "https://npm.pkg.github.com/"
   },
   "homepage": "https://github.com/cabiri-io/sls-pipe#readme",
   "main": "dist/index.js",

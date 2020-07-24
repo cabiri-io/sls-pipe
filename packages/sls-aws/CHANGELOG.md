@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.0.3](https://github.com/cabiri-io/sls-env/compare/@cabiri-io/sls-aws@0.0.2...@cabiri-io/sls-aws@0.0.3) (2020-07-24)
+
+
+### Features
+
+* add publishing config ([debce70](https://github.com/cabiri-io/sls-env/commit/debce7083afbc99434bea7c91628dcb4c184db4c))
+
+
+
+
+
 ## 0.0.2 (2020-07-24)
 
 
