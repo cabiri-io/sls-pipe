@@ -3,7 +3,8 @@
   "version": "independent",
   "command": {
     "version": {
-      "includeMergedTags": true
+      "includeMergedTags": true,
+      "message": "chore(release): publish %s"
     }
   }
 }
