@@ -5,6 +5,9 @@
     "version": {
       "includeMergedTags": true,
       "message": "chore(release): publish %s"
+    },
+    "publish": {
+      "registry": "https://npm.pkg.github.com"
     }
   }
 }

@@ -9,6 +9,7 @@
     "directory": "packages/sls-app"
   },
   "publishConfig": {
+    "access": "restricted",
     "registry": "https://npm.pkg.github.com/"
   },
   "homepage": "https://github.com/cabiri-io/sls-pipe#readme",
