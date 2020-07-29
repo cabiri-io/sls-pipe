@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 0.0.1 (2020-07-29)
+
+
+### Features
+
+* add ability to create payload to environment ([0982bfd](https://github.com/cabiri-io/sls-pipe/commit/0982bfd3862b19c62f67a82e007e608a5bcf4579))
+* add base repository structure ([#3](https://github.com/cabiri-io/sls-pipe/issues/3)) ([62a2c31](https://github.com/cabiri-io/sls-pipe/commit/62a2c312f227f5c79149ee97f20c303ea50e4578))
+* add publishing config ([debce70](https://github.com/cabiri-io/sls-pipe/commit/debce7083afbc99434bea7c91628dcb4c184db4c))
+* configure publish registry in learrn and mark package as restricted ([d5dc73c](https://github.com/cabiri-io/sls-pipe/commit/d5dc73c507e463f7ed0233a4c29b4b750250b49a))
+* extend concept to add application pre and action ([510350d](https://github.com/cabiri-io/sls-pipe/commit/510350d8776bc9b6474ae080d388a1258996e771))
+* initial implementation for environment ([e4b87db](https://github.com/cabiri-io/sls-pipe/commit/e4b87db1e9e2f54503eadbfb53bc5fa3e2e033cf))
+* initial release of basic features ([87a6c3f](https://github.com/cabiri-io/sls-pipe/commit/87a6c3f171f000740eb9fa13576337055418e705))
+* replace url with github ([d5f9d08](https://github.com/cabiri-io/sls-pipe/commit/d5f9d081b5b1f8970eb40c0a7157d1dafdff1bfa))
+* test release packages ([2babd95](https://github.com/cabiri-io/sls-pipe/commit/2babd95b61fe6f283b0419341c5fa10fe14929bc))
+
+
+
+
+
 ## 0.0.8 (2020-07-29)
 
 
