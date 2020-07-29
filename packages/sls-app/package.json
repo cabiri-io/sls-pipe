@@ -2,10 +2,10 @@
   "name": "@cabiri-io/sls-app",
   "version": "0.0.7",
   "author": "Cabiri <opensource@cabiri.io>",
-  "license": "MIT",
+  "license": "UNLICENSED",
   "repository": {
     "type": "git",
-    "url": "github:cabiri-io/sls-pipe",
+    "url": "https://github.com/cabiri-io/sls-pipe.git",
     "directory": "packages/sls-app"
   },
   "publishConfig": {
