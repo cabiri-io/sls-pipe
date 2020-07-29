@@ -1,6 +1,6 @@
 {
   "name": "@cabiri-io/sls-aws",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "Cabiri <opensource@cabiri.io>",
   "license": "UNLICENSED",
   "repository": {
@@ -16,7 +16,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@cabiri-io/sls-env": "^0.0.1"
+    "@cabiri-io/sls-env": "^0.0.2"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.59"
