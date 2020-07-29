@@ -1,4 +1,4 @@
-name: Master
+name: Publish
 
 on:
   push:
@@ -18,6 +18,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Configure CI Git User
+        run: |
+          git config --global user.email octobot@github.com
+          git config --global user.name GitHub Actions
 
       - name: Use Node.js 12.x
         uses: actions/setup-node@v1
@@ -43,6 +50,7 @@ jobs:
         run: yarn build
 
       - name: publish packages
-        run: yarn lerna publish patch --yes --conventional-commits --create-release github
+        run: yarn publish:ci
         env:
           CI: true
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -19,7 +19,9 @@
     "commit": "git-cz",
     "pretty-quick": "pretty-quick",
     "prettify:fix": "prettier --write 'packages/**/*.{js,ts}'",
-    "prettify": "prettier --check 'packages/**/*.{js,ts}'"
+    "prettify": "prettier --check 'packages/**/*.{js,ts}'",
+    "version:update": "lerna version patch --yes --conventional-commits",
+    "publish:ci": "lerna publish --yes --create-release github"
   },
   "workspaces": [
     "packages/*"
@@ -50,5 +52,6 @@
     "projects": [
       "<rootDir>/packages/*"
     ]
-  }
+  },
+  "version": "0.0.0"
 }
