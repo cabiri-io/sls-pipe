@@ -12,7 +12,7 @@ on:
       - packages/sls-env/src/**
       - packages/sls-env/package.json
 jobs:
-  create-pr:
+  build:
     runs-on: ubuntu-latest
     timeout-minutes: 4
 
@@ -42,10 +42,7 @@ jobs:
       - name: build packages
         run: yarn build
 
-      - name: build packages
-        run: yarn build
-
-      - name: build
-        run: lerna publish patch --yes --conventional-commits --create-release github
+      - name: publish packages
+        run: yarn lerna publish patch --yes --conventional-commits --create-release github
         env:
           CI: true
