@@ -1,4 +1,5 @@
 {
+  "license": "UNLICENSED",
   "engines": {
     "node": ">=0.10"
   },

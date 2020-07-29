@@ -6,5 +6,6 @@
   "references": [
     {"path": "./packages/sls-app"},
     {"path": "./packages/sls-env"},
+    {"path": "./packages/sls-aws"},
   ]
 }

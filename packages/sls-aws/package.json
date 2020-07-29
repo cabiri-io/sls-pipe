@@ -1,12 +1,12 @@
 {
-  "name": "@cabiri-io/sls-app",
+  "name": "@cabiri-io/sls-aws",
   "version": "0.0.0",
   "author": "Cabiri <opensource@cabiri.io>",
   "license": "UNLICENSED",
   "repository": {
     "type": "git",
     "url": "https://github.com/cabiri-io/sls-pipe.git",
-    "directory": "packages/sls-app"
+    "directory": "packages/sls-aws"
   },
   "publishConfig": {
     "access": "restricted",
@@ -14,5 +14,11 @@
   },
   "homepage": "https://github.com/cabiri-io/sls-pipe#readme",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts"
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@cabiri-io/sls-env": "^0.0.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.59"
+  }
 }

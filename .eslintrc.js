@@ -40,7 +40,6 @@ module.exports = {
       }
     }
   ],
-  //   parser: 'babel-eslint',
   parser: '@typescript-eslint/parser',
   plugins: ['markdown', 'import', 'prettier', 'eslint-comments'],
   parserOptions: {

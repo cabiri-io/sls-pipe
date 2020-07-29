@@ -1,14 +1,26 @@
 {
   "name": "@cabiri-io/sls-env",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "author": "Cabiri <opensource@cabiri.io>",
-  "license": "MIT",
+  "license": "UNLICENSED",
   "repository": {
     "type": "git",
-    "url": "https://github.com/cabiri-io/sls-env",
+    "url": "https://github.com/cabiri-io/sls-pipe.git",
     "directory": "packages/sls-env"
+  },
+  "publishConfig": {
+    "access": "restricted",
+    "registry": "https://npm.pkg.github.com/"
   },
   "homepage": "https://github.com/cabiri-io/sls-pipe#readme",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts"
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "lodash.camelcase": "^4.3.0"
+  },
+  "devDependencies": {
+    "@types/lodash.camelcase": "^4.3.6",
+    "@types/lodash.snakecase": "^4.1.6",
+    "lodash.snakecase": "^4.1.1"
+  }
 }
