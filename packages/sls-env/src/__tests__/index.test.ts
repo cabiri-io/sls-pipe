@@ -204,6 +204,32 @@ describe('serverless environment', () => {
         .start({}, {})
     })
 
+    it('creates config from value', () => {
+      type AppConfig = {
+        message: string
+      }
+
+      return environment<Handler<EmptyEvent, EmptyContext, void>, AppConfig, never, void>()
+        .config({ message: 'hello' })
+        .app(({ config }) => {
+          expect(config.message).toBe('hello')
+        })
+        .start({}, {})
+    })
+
+    it('creates config from Promise', () => {
+      type AppConfig = {
+        message: string
+      }
+
+      return environment<Handler<EmptyEvent, EmptyContext, void>, AppConfig, never, void>()
+        .config(Promise.resolve({ message: 'hello' }))
+        .app(({ config }) => {
+          expect(config.message).toBe('hello')
+        })
+        .start({}, {})
+    })
+
     it.todo('create config from object factory')
   })
 

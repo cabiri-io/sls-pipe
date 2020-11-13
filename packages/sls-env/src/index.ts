@@ -63,6 +63,9 @@ type PayloadConstructor<H extends Handler<any, any, any>, R> = (event: Parameter
 
 type SuccessHandler<I, O> = (i: I) => O
 
+type FunctionConstructor<C> = () => C | Promise<C>
+
+type ConfigConstructor<C> = FunctionConstructor<C> | Promise<C> | C
 // EventType & ContextType => LambdaResult - that needs to be just a handler
 // D - dependencies
 // C - config
@@ -87,9 +90,7 @@ export type SlsEnvironment<
     ...func: [Function] | [ObjectUnionDependencies<DependentyType>] | TupleUnionDependencies<DependentyType>
   ) => SlsEnvironment<H, ConfigType, DependentyType, PayloadType, R>
   logger: (logger: Logger) => SlsEnvironment<H, ConfigType, DependentyType, PayloadType, R>
-  config: (
-    config: () => ConfigType | Promise<ConfigType>
-  ) => SlsEnvironment<H, ConfigType, DependentyType, PayloadType, R>
+  config: (config: ConfigConstructor<ConfigType>) => SlsEnvironment<H, ConfigType, DependentyType, PayloadType, R>
   payload: (
     payloadConstructor: PayloadConstructor<H, PayloadType>
   ) => SlsEnvironment<H, ConfigType, DependentyType, PayloadType, R>
@@ -148,8 +149,12 @@ export const environment = <
     successHandler() {
       return this
     },
-    config(appConfigConstructor) {
-      config = Promise.resolve(appConfigConstructor())
+    config(constructor) {
+      if (typeof constructor === 'function' && constructor instanceof Function) {
+        config = Promise.resolve(constructor())
+      } else {
+        config = Promise.resolve(constructor)
+      }
       return this
     },
     // maybe it will be just easier to configure that through
