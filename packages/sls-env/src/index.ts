@@ -4,7 +4,6 @@
 import camelCase from 'lodash.camelcase'
 import { PayloadDefinitionError } from './error/payload-definition-error'
 
-type PayloadConstructor<E, C, R> = (event: E, context: C) => R
 // but that makes it very specific to even and context
 // so maybe we extract Request to be Request {event, context}
 // or maybe request becomes something abstract
@@ -20,12 +19,14 @@ type Event<I, C, O> = {
 // event = <Event, Context, Response> where Event can be Request,
 // event = {input, context?, output?}
 // or maybe at this point we don't allow working with raw events as a good practice and abstraction
-type AppConstructor<P, D, R> = ({
+type AppConstructor<P, C, D, R> = ({
   payload,
   dependencies,
+  config,
   logger
 }: {
   payload: P
+  config: C
   dependencies: D
   logger: Logger
 }) => R | Promise<R>
@@ -56,23 +57,47 @@ export type Logger = {
   trace: LogFn
 }
 
-// E - event
-// C - context
+export type Handler<E, C, R> = (event: E, context: C) => R
+
+type PayloadConstructor<H extends Handler<any, any, any>, R> = (event: Parameters<H>[0], context: Parameters<H>[1]) => R
+
+type SuccessHandler<I, O> = (i: I) => O
+
+// EventType & ContextType => LambdaResult - that needs to be just a handler
 // D - dependencies
+// C - config
+// P - payload
 // R - result
-export type SlsEnvironment<E, C, D, P, R> = {
+// Handler<Event, Context>
+export type SlsEnvironment<
+  H extends Handler<any, any, any>,
+  ConfigType,
+  DependentyType,
+  PayloadType,
+  R = ReturnType<H>
+> = {
   // but that may not be true as result should be handled by response
   //   .errorResponseHandler(apiGatewayHandler, errorMapper)
-  errorHandler: () => SlsEnvironment<E, C, D, P, R>
+  errorHandler: () => SlsEnvironment<H, ConfigType, DependentyType, PayloadType, R>
   //   .successResponseHandler(apiGatewayHandler, successResponseMapper)
-  successHandler: () => SlsEnvironment<E, C, D, P, R>
+  successHandler: (
+    handler: SuccessHandler<R, ReturnType<H>>
+  ) => SlsEnvironment<H, ConfigType, DependentyType, PayloadType, R>
   global: (
-    ...func: [Function] | [ObjectUnionDependencies<D>] | TupleUnionDependencies<D>
-  ) => SlsEnvironment<E, C, D, P, R>
-  logger: (logger: Logger) => SlsEnvironment<E, C, D, P, R>
-  payload: (payloadConstructor: PayloadConstructor<E, C, P>) => SlsEnvironment<E, C, D, P, R>
-  app: (app: AppConstructor<P, D, R>) => SlsEnvironment<E, C, D, P, R>
-  start: (event: E, context: C) => Promise<R>
+    ...func: [Function] | [ObjectUnionDependencies<DependentyType>] | TupleUnionDependencies<DependentyType>
+  ) => SlsEnvironment<H, ConfigType, DependentyType, PayloadType, R>
+  logger: (logger: Logger) => SlsEnvironment<H, ConfigType, DependentyType, PayloadType, R>
+  config: (
+    config: () => ConfigType | Promise<ConfigType>
+  ) => SlsEnvironment<H, ConfigType, DependentyType, PayloadType, R>
+  payload: (
+    payloadConstructor: PayloadConstructor<H, PayloadType>
+  ) => SlsEnvironment<H, ConfigType, DependentyType, PayloadType, R>
+  app: (
+    app: AppConstructor<PayloadType, ConfigType, DependentyType, R>
+  ) => SlsEnvironment<H, ConfigType, DependentyType, PayloadType, R>
+  start: (...params: Parameters<H>) => Promise<ReturnType<H>> // actually that is not true the return value will be different as that will be tight to Lambda Handler
+  // for example in context of ApiGateway that will be {body: ..., statusCode: ...}
 }
 
 export type EnvConfig = {
@@ -84,8 +109,22 @@ const passThroughPayloadMapping = <E, C, P>(event: E, context: C) => (({ event, 
 // with this level abstraction we would need to have awsEnv
 // with this level abstraction we would need to have expressEnv
 // with this level abstraction we would need to have googleFunctionEnv
-export const environment = <E, C, D, P, R>(_config?: EnvConfig): SlsEnvironment<E, C, D, P, R> => {
-  let appConstructor: AppConstructor<P, D, R>
+//
+
+// if we just use env that does not have any typing which makes solution not type safe
+// I think it make more sense to move just to config and copy any envs to config when required
+
+// each app has to have a config
+export const environment = <
+  H extends Handler<any, any, any>,
+  ConfigType,
+  DependencyType,
+  PayloadType,
+  R = ReturnType<H>
+>(
+  _config?: EnvConfig
+): SlsEnvironment<H, ConfigType, DependencyType, PayloadType, R> => {
+  let appConstructor: AppConstructor<PayloadType, ConfigType, DependencyType, R>
   // todo: it would be probably better if that is typed as the rest of the framework
   // can we pick only the one that are there not go through x number of env variables
   const envNameMapper = _config?.envNameMapper ?? camelCase
@@ -96,10 +135,12 @@ export const environment = <E, C, D, P, R>(_config?: EnvConfig): SlsEnvironment<
   // at the moment we are cheating
   // promise of dependencies
   // how do we define that envs are always there in typescript for dependencies
-  let dependencies: D = ({ env } as unknown) as D
+  let dependencies: DependencyType = ({ env } as unknown) as DependencyType
   // todo: we need to have something like no payload
-  let payloadFactory: PayloadConstructor<E, C, P> = passThroughPayloadMapping
+  let payloadFactory: PayloadConstructor<H, PayloadType> = passThroughPayloadMapping
   let logger: Logger = console
+  let config: Promise<ConfigType> = Promise.resolve({} as unknown) as Promise<ConfigType>
+  let successHandler: SuccessHandler<R, ReturnType<H>> = i => (i as unknown) as ReturnType<H>
   return {
     errorHandler() {
       return this
@@ -107,6 +148,15 @@ export const environment = <E, C, D, P, R>(_config?: EnvConfig): SlsEnvironment<
     successHandler() {
       return this
     },
+    config(appConfigConstructor) {
+      config = Promise.resolve(appConfigConstructor())
+      return this
+    },
+    // maybe it will be just easier to configure that through
+    // global({
+    // module1: module1,
+    // module2: module2,
+    // }) why would you want to create multiple globals? I think that needs to be simpler
     // dependency
     // or maybe we have something similar to app and we have a function that
     // creates dependencies
@@ -116,6 +166,7 @@ export const environment = <E, C, D, P, R>(_config?: EnvConfig): SlsEnvironment<
     // dependency name string, and function
     // function with name
     // pass a promise and say that will resolve finally to your dependency
+    // maybe this is just an object with all the values instead of having all this global config
     global(...dependency) {
       // todo: how about dependencies being wrapped in promises we would need to unwrap them so we can store things like SSM result in there
       // todo: disable adding env to dependencies
@@ -155,12 +206,15 @@ export const environment = <E, C, D, P, R>(_config?: EnvConfig): SlsEnvironment<
       // now you can really chain that nicely
       // maybe we start currying
       // Promise.resolve().then(appConstructor(event, context))
-      Promise.resolve()
-        .then(() => ({
+      Promise.resolve(config)
+        // here we need to add dependencies as well
+        .then(config => ({
           payload: payloadFactory(event, context),
           dependencies,
+          config,
           logger
         }))
         .then(appConstructor)
+        .then(successHandler)
   }
 }
