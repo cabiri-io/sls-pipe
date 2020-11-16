@@ -1,6 +1,5 @@
 // eslint-disable-next-line eslint-comments/disable-enable-pair
 /* eslint-disable @typescript-eslint/ban-types */
-import snakeCase from 'lodash.snakecase'
 import { Handler, Logger, environment } from '..'
 
 type EmptyEvent = {}
@@ -24,23 +23,6 @@ describe('serverless environment', () => {
       .then(result => expect(result).toBe('hello world!')))
 
   describe('dependencies', () => {
-    it('supports adding named function as dependencies', async () => {
-      type BuildMessage = (message: string, name: string) => string
-      type BuildMessageDependencies = {
-        buildMessage: BuildMessage
-      }
-
-      const buildMessage: BuildMessage = (message, name) => `${message} ${name}!`
-
-      return environment<Handler<MessageEvent, NameContext, string>, never, BuildMessageDependencies, EventPayload>()
-        .global(buildMessage)
-        .app(({ payload: { event, context }, dependencies: { buildMessage } }) =>
-          buildMessage(event.message, context.name)
-        )
-        .start({ message: 'hello' }, { name: 'world' })
-        .then(result => expect(result).toBe('hello world!'))
-    })
-
     it('supports adding object with named dependencies', async () => {
       type BuildMessage = (message: string, name: string) => string
       type BuildMessageDependencies = {
@@ -56,26 +38,42 @@ describe('serverless environment', () => {
         .then(result => expect(result).toBe('hello world!'))
     })
 
-    it('supports adding through function arguments', async () => {
+    it('supports adding function which returns named dependencies', async () => {
       type BuildMessage = (message: string, name: string) => string
       type BuildMessageDependencies = {
         buildMessage: BuildMessage
       }
 
       return environment<Handler<MessageEvent, NameContext, string>, never, BuildMessageDependencies, EventPayload>()
-        .global('buildMessage', (message: string, name: string) => `${message} ${name}!`)
+        .global(() => ({
+          buildMessage: (message: string, name: string) => `${message} ${name}!`
+        }))
         .app(({ payload: { event, context }, dependencies: { buildMessage } }) =>
           buildMessage(event.message, context.name)
         )
         .start({ message: 'hello' }, { name: 'world' })
         .then(result => expect(result).toBe('hello world!'))
     })
+
+    it('passes config and log as part of dependency factory function', async () => {
+      type BuildMessage = (message: string, name: string) => string
+      type BuildMessageDependencies = {
+        buildMessage: BuildMessage
+      }
+      type Config = { hello: string }
+
+      return environment<Handler<MessageEvent, NameContext, string>, Config, BuildMessageDependencies, EventPayload>()
+        .config({ hello: 'config' })
+        .global(({ config }) => ({
+          buildMessage: (message: string, name: string) => `${message} ${name} of ${config.hello}!`
+        }))
+        .app(({ payload: { event, context }, dependencies: { buildMessage } }) =>
+          buildMessage(event.message, context.name)
+        )
+        .start({ message: 'hello' }, { name: 'world' })
+        .then(result => expect(result).toBe('hello world of config!'))
+    })
   })
-
-  // type A<AA, AB> = (a: AA) => AB
-  // type C<AC, AD extends A<unknown, unknown>> = (a: AC) => AD
-
-  // const a: C<string, A<number, string>> = a => b => a + b
 
   describe('payload', () => {
     it('supports mapping payload to custom type', async () => {
@@ -98,7 +96,7 @@ describe('serverless environment', () => {
         BuildHelloWorldMessageDependencies,
         HelloWorldMessage
       >()
-        .global(buildMessage)
+        .global({ buildMessage })
         .payload((event, context) => ({
           hello: event.message,
           world: context.name
@@ -141,43 +139,7 @@ describe('serverless environment', () => {
     })
   })
 
-  // maybe we should have environment variables and all should be consider app configuration?
-  describe('environment variables mapper', () => {
-    // how do we define environment variables
-    it('default to camel case', () => {
-      process.env.WORKSPACE = 'workspaceValue'
-      process.env.WORKSPACE_NAME = 'workspaceNameValue'
-      type EnvDependency = { env: { workspace: string; workspaceName: string } }
-
-      return environment<Handler<EmptyEvent, EmptyContext, void>, never, EnvDependency, void>()
-        .app(({ dependencies: { env } }) => {
-          expect(env.workspace).toBe('workspaceValue')
-          expect(env.workspaceName).toBe('workspaceNameValue')
-        })
-        .start({}, {})
-    })
-
-    it('allows to override default variable name', () => {
-      // fixme: all the env needs to be pushed to configuration and be described as types
-      process.env.WORKSPACE1 = 'workspace1Value'
-      process.env.WORKSPACE1_NAME = 'workspaceName1Value'
-      type EnvDependency = { env: { workspace_1: string; workspace_1_name: string } }
-
-      return environment<Handler<EmptyEvent, EmptyContext, void>, never, EnvDependency, void>({
-        envNameMapper: snakeCase
-      })
-        .app(({ dependencies: { env } }) => {
-          expect(env.workspace_1).toBe('workspace1Value')
-          expect(env.workspace_1_name).toBe('workspaceName1Value')
-        })
-        .start({}, {})
-    })
-  })
-
   describe('application configuration', () => {
-    // should app configuration be passed to dependecies
-    // that could be good as then we can use to to configure all the clients and their timeouts
-    //
     it('creates config from pure function', () => {
       type AppConfig = {
         message: string

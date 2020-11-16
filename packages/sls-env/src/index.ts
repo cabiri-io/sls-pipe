@@ -1,7 +1,6 @@
 // eslint-disable-next-line eslint-comments/disable-enable-pair
 /* eslint-disable @typescript-eslint/ban-types */
 
-import camelCase from 'lodash.camelcase'
 import { PayloadDefinitionError } from './error/payload-definition-error'
 
 // but that makes it very specific to even and context
@@ -31,18 +30,6 @@ type AppConstructor<P, C, D, R> = ({
   logger: Logger
 }) => R | Promise<R>
 
-type Union<T> = T extends Array<infer U> ? U | never : T
-
-type GetTupleType<T, K> = K extends keyof T ? [K, T[K]] : never
-type TupleDependenciesFromType<T, K extends Array<keyof T>> = { [I in keyof K]: GetTupleType<T, K[I]> }
-type TupleUnionDependencies<T> = Union<TupleDependenciesFromType<T, Array<keyof T>>>
-
-type GetObjectType<T, K> = K extends keyof T ? { [p in K]: T[K] } : never
-type ObjectDependenciesFromType<T, K extends Array<keyof T>> = { [I in keyof K]: GetObjectType<T, K[I]> }
-// type TupleFromType<T, K extends Array<keyof T>> = { [I in keyof K]: GetTupleType<T, K[I]> }
-// type Union<T extends Array<any>, U = never> = T[number] | U
-type ObjectUnionDependencies<T> = Union<ObjectDependenciesFromType<T, Array<keyof T>>>
-
 interface LogFn {
   (msg: string, ...args: Array<any>): void
   (obj: object, msg?: string, ...args: Array<any>): void
@@ -66,44 +53,37 @@ type SuccessHandler<I, O> = (i: I) => O
 type FunctionConstructor<C> = () => C | Promise<C>
 
 type ConfigConstructor<C> = FunctionConstructor<C> | Promise<C> | C
+
+type DependenciesConstructorParams<C> = {
+  config: C
+  logger: Logger
+}
+
+type DependenciesFunctionConstructor<C, D> = (params: DependenciesConstructorParams<C>) => D
+type DependenciesConstructor<C, D> = DependenciesFunctionConstructor<C, D> | D
+
 // EventType & ContextType => LambdaResult - that needs to be just a handler
 // D - dependencies
 // C - config
 // P - payload
 // R - result
 // Handler<Event, Context>
-export type SlsEnvironment<
-  H extends Handler<any, any, any>,
-  ConfigType,
-  DependentyType,
-  PayloadType,
-  R = ReturnType<H>
-> = {
+export type SlsEnvironment<H extends Handler<any, any, any>, C, D, P, R = ReturnType<H>> = {
   // but that may not be true as result should be handled by response
   //   .errorResponseHandler(apiGatewayHandler, errorMapper)
-  errorHandler: () => SlsEnvironment<H, ConfigType, DependentyType, PayloadType, R>
+  errorHandler: () => SlsEnvironment<H, C, D, P, R>
   //   .successResponseHandler(apiGatewayHandler, successResponseMapper)
-  successHandler: (
-    handler: SuccessHandler<R, ReturnType<H>>
-  ) => SlsEnvironment<H, ConfigType, DependentyType, PayloadType, R>
-  global: (
-    ...func: [Function] | [ObjectUnionDependencies<DependentyType>] | TupleUnionDependencies<DependentyType>
-  ) => SlsEnvironment<H, ConfigType, DependentyType, PayloadType, R>
-  logger: (logger: Logger) => SlsEnvironment<H, ConfigType, DependentyType, PayloadType, R>
-  config: (config: ConfigConstructor<ConfigType>) => SlsEnvironment<H, ConfigType, DependentyType, PayloadType, R>
-  payload: (
-    payloadConstructor: PayloadConstructor<H, PayloadType>
-  ) => SlsEnvironment<H, ConfigType, DependentyType, PayloadType, R>
-  app: (
-    app: AppConstructor<PayloadType, ConfigType, DependentyType, R>
-  ) => SlsEnvironment<H, ConfigType, DependentyType, PayloadType, R>
+  successHandler: (handler: SuccessHandler<R, ReturnType<H>>) => SlsEnvironment<H, C, D, P, R>
+  global: (dependencies: DependenciesConstructor<C, D>) => SlsEnvironment<H, C, D, P, R>
+  logger: (logger: Logger) => SlsEnvironment<H, C, D, P, R>
+  config: (config: ConfigConstructor<C>) => SlsEnvironment<H, C, D, P, R>
+  payload: (payloadConstructor: PayloadConstructor<H, P>) => SlsEnvironment<H, C, D, P, R>
+  app: (app: AppConstructor<P, C, D, R>) => SlsEnvironment<H, C, D, P, R>
   start: (...params: Parameters<H>) => Promise<ReturnType<H>> // actually that is not true the return value will be different as that will be tight to Lambda Handler
   // for example in context of ApiGateway that will be {body: ..., statusCode: ...}
 }
 
-export type EnvConfig = {
-  envNameMapper: (n: string) => string
-}
+export type EnvConfig = {}
 
 const passThroughPayloadMapping = <E, C, P>(event: E, context: C) => (({ event, context } as unknown) as P)
 // maybe we have really generic environment and then we have wrappers for all different scenarios?
@@ -116,31 +96,21 @@ const passThroughPayloadMapping = <E, C, P>(event: E, context: C) => (({ event, 
 // I think it make more sense to move just to config and copy any envs to config when required
 
 // each app has to have a config
-export const environment = <
-  H extends Handler<any, any, any>,
-  ConfigType,
-  DependencyType,
-  PayloadType,
-  R = ReturnType<H>
->(
+export const environment = <H extends Handler<any, any, any>, C, D, P, R = ReturnType<H>>(
   _config?: EnvConfig
-): SlsEnvironment<H, ConfigType, DependencyType, PayloadType, R> => {
-  let appConstructor: AppConstructor<PayloadType, ConfigType, DependencyType, R>
+): SlsEnvironment<H, C, D, P, R> => {
+  let appConstructor: AppConstructor<P, C, D, R>
   // todo: it would be probably better if that is typed as the rest of the framework
   // can we pick only the one that are there not go through x number of env variables
-  const envNameMapper = _config?.envNameMapper ?? camelCase
-  const env = Object.entries(process.env)
-    .map(entry => [envNameMapper(entry[0]), entry[1]])
-    .reduce((p, c) => ({ ...p, [c[0] as string]: c[1] }), {})
   // todo: add ability to add mapping environment variables to typed values like boolean and number etc...
   // at the moment we are cheating
   // promise of dependencies
   // how do we define that envs are always there in typescript for dependencies
-  let dependencies: DependencyType = ({ env } as unknown) as DependencyType
+  let dependencies: DependenciesConstructor<C, D> = ({} as unknown) as DependenciesConstructor<C, D>
   // todo: we need to have something like no payload
-  let payloadFactory: PayloadConstructor<H, PayloadType> = passThroughPayloadMapping
+  let payloadFactory: PayloadConstructor<H, P> = passThroughPayloadMapping
   let logger: Logger = console
-  let config: Promise<ConfigType> = Promise.resolve({} as unknown) as Promise<ConfigType>
+  let config: Promise<C> = Promise.resolve({} as unknown) as Promise<C>
   let successHandler: SuccessHandler<R, ReturnType<H>> = i => (i as unknown) as ReturnType<H>
   return {
     errorHandler() {
@@ -159,44 +129,55 @@ export const environment = <
     },
     // maybe it will be just easier to configure that through
     // global({
-    // module1: module1,
-    // module2: module2,
+    //   module1: module1,
+    //   module2: module2,
     // }) why would you want to create multiple globals? I think that needs to be simpler
     // dependency
-    // or maybe we have something similar to app and we have a function that
-    // creates dependencies
-    // dependencies(deps().global().global().prototype().create)
-    // dependencies(deps().global().global().prototype())
-    // maybe simpler approach would be just supporting 2 options
-    // dependency name string, and function
-    // function with name
-    // pass a promise and say that will resolve finally to your dependency
-    // maybe this is just an object with all the values instead of having all this global config
-    global(...dependency) {
-      // todo: how about dependencies being wrapped in promises we would need to unwrap them so we can store things like SSM result in there
-      // todo: disable adding env to dependencies
-      // test for errors
-      const [namedDependency, func] = dependency
-      if (typeof namedDependency === 'object') {
-        dependencies = { ...dependencies, ...namedDependency }
-      } else if (typeof namedDependency === 'function') {
-        dependencies = { ...dependencies, [namedDependency.name]: namedDependency }
-      } else {
-        dependencies = { ...dependencies, [namedDependency]: func }
-      }
+    // global(config => ({
+    //   module1: module1(config),
+    //   module2: module2,
+    // })) why would you want to create multiple globals? I think that needs to be simpler
+    /**
+     * Creates or defines a list of dependencies which will be created and injected to the application.
+     *
+     * Global dependencies are created only once.
+     *
+     * @example
+     * global({
+     *  module1: module1,
+     *  module2: module2
+     * })
+     *
+     * @example
+     * global(({config, logger}) => {
+     *  logger.debug("createing global configuration")
+     *  return {
+     *    module1: createModule1(config)
+     *    module2: createModule2(config, logger)
+     *  }
+     * })
+     */
+    global(constructor) {
+      // should we be throwing error when already set
+      // or
+      // just collect all of them and process later
+      dependencies = constructor
       return this
     },
     logger(log) {
       logger = log
       return this
     },
-    payload(payloadConstructor) {
+    /**
+     *
+     */
+    payload(constructor) {
       if (payloadFactory !== passThroughPayloadMapping) {
         throw new PayloadDefinitionError(
           'you can configure payload constructor once, otherwise you unintentionally override configuration'
         )
       }
-      payloadFactory = payloadConstructor
+      payloadFactory = constructor
       return this
     },
     // should we be throwing error when app is not present
@@ -207,19 +188,36 @@ export const environment = <
       // how can we remove usage of this
       return this
     },
-    start: async (event, context) =>
+    start: async (event, context) => {
       // now you can really chain that nicely
       // maybe we start currying
       // Promise.resolve().then(appConstructor(event, context))
-      Promise.resolve(config)
-        // here we need to add dependencies as well
-        .then(config => ({
-          payload: payloadFactory(event, context),
-          dependencies,
-          config,
-          logger
-        }))
-        .then(appConstructor)
-        .then(successHandler)
+      let resolvedDependencies: D
+
+      return (
+        Promise.resolve(config)
+          .then(config => {
+            // resolve only once
+            if (!resolvedDependencies) {
+              if (typeof dependencies === 'function' && dependencies instanceof Function) {
+                resolvedDependencies = dependencies({ config, logger })
+              } else {
+                resolvedDependencies = dependencies
+              }
+            }
+
+            return { config, dependencies: resolvedDependencies }
+          })
+          // here we need to add dependencies as well
+          .then(({ config, dependencies }) => ({
+            payload: payloadFactory(event, context),
+            dependencies,
+            config,
+            logger
+          }))
+          .then(appConstructor)
+          .then(successHandler)
+      )
+    }
   }
 }
