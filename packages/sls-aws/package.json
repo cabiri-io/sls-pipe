@@ -1,6 +1,6 @@
 {
   "name": "@cabiri-io/sls-aws",
-  "version": "0.0.3-beta.0",
+  "version": "0.0.3",
   "author": "Cabiri <opensource@cabiri.io>",
   "license": "UNLICENSED",
   "repository": {

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.0.3](https://github.com/cabiri-io/sls-pipe/compare/v0.0.2...v0.0.3) (2020-11-17)
+
+
+### Features
+
+* api gateway with config ([c8e49c0](https://github.com/cabiri-io/sls-pipe/commit/c8e49c019ed4830bb43b2d13bd56dbafa3c5aed3))
+
+
+
+
+
 ## 0.0.2 (2020-07-29)
 
 

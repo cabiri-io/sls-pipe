@@ -1,6 +1,6 @@
 {
   "name": "@cabiri-io/sls-env",
-  "version": "0.0.3-beta.0",
+  "version": "0.0.3",
   "author": "Cabiri <opensource@cabiri.io>",
   "license": "UNLICENSED",
   "description": "Environment to build your serverless applications",
@@ -16,8 +16,6 @@
   "homepage": "https://github.com/cabiri-io/sls-pipe#readme",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "dependencies": {
-  },
   "devDependencies": {
     "@types/lodash.camelcase": "^4.3.6",
     "@types/lodash.snakecase": "^4.1.6",
