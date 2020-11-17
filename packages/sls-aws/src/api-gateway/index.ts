@@ -6,4 +6,8 @@ type APIGatewayV2Handler<T = never> = Handler<APIGatewayProxyEventV2, Context, A
 
 export const apiGatewayV2 = <D, P, R, C = never>(
   config?: EnvConfig
-): SlsEnvironment<APIGatewayV2Handler<R>, C, D, P, R> => environment<APIGatewayV2Handler<R>, C, D, P, R>(config)
+): SlsEnvironment<APIGatewayV2Handler<R>, C, D, P, R> =>
+  environment<APIGatewayV2Handler<R>, C, D, P, R>(config).successHandler(t => ({
+    statusCode: 200,
+    body: JSON.stringify(t)
+  }))
