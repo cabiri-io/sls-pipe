@@ -161,10 +161,15 @@ export const environment = <H extends Handler<any, any, any>, C, D, P, R = Retur
       // should we be throwing error when already set
       // or
       // just collect all of them and process later
+      // e.g.
+      // .global(...somedependencies)
+      // .global(...moredependencies)
       dependencies = constructor
       return this
     },
     logger(log) {
+      // todo: here we need to allow two options a log or a constructor with config, event and context
+      // through config you can change the log level for example
       logger = log
       return this
     },
@@ -199,6 +204,8 @@ export const environment = <H extends Handler<any, any, any>, C, D, P, R = Retur
           .then(config => {
             // resolve only once
             if (!resolvedDependencies) {
+              // todo: add log to say that dependencies are initialisating
+              // todo: cloud be good for tracking cold starts
               if (typeof dependencies === 'function' && dependencies instanceof Function) {
                 resolvedDependencies = dependencies({ config, logger })
               } else {
