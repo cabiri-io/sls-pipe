@@ -16,7 +16,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@cabiri-io/sls-env": "^0.0.2"
+    "@cabiri-io/sls-env": "file:../sls-env"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.59"
