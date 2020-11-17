@@ -20,8 +20,8 @@
     "pretty-quick": "pretty-quick",
     "prettify:fix": "prettier --write 'packages/**/*.{js,ts}'",
     "prettify": "prettier --check 'packages/**/*.{js,ts}'",
-    "publish:canary": "lerna publish patch --canary --yes --create-release github  --conventional-commits",
-    "publish:ci": "lerna publish patch --yes --create-release github  --conventional-commits"
+    "publish:canary": "lerna publish --canary",
+    "publish:ci": "lerna publish patch --yes --create-release github --conventional-commits"
   },
   "workspaces": [
     "packages/*"
