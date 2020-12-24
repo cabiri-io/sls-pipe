@@ -66,7 +66,8 @@ type DependenciesConstructor<C, D> = DependenciesFunctionConstructor<C, D> | D
 // D - dependencies
 // C - config
 // P - payload
-// R - result
+// R - result (it can be the same sa the result of the application response or it could be different which can the remapped in the success hander to match
+// expected type i the handler
 // Handler<Event, Context>
 export type SlsEnvironment<H extends Handler<any, any, any>, C, D, P, R = ReturnType<H>> = {
   // but that may not be true as result should be handled by response
@@ -96,6 +97,13 @@ const passThroughPayloadMapping = <E, C, P>(event: E, context: C) => (({ event, 
 // I think it make more sense to move just to config and copy any envs to config when required
 
 // each app has to have a config
+
+// fixme: maybe we need to have App Config defined in the same way as we have Handler
+// type Input = {D: dependencies, C: config, R: result, L: logger, P: Payload}
+// App<Input, Output>
+//
+// config can define how the template behavies for example you can say to append configuration
+// you may have template and then an instance will add other develop configuration on top of that
 export const environment = <H extends Handler<any, any, any>, C, D, P, R = ReturnType<H>>(
   _config?: EnvConfig
 ): SlsEnvironment<H, C, D, P, R> => {
@@ -111,12 +119,14 @@ export const environment = <H extends Handler<any, any, any>, C, D, P, R = Retur
   let payloadFactory: PayloadConstructor<H, P> = passThroughPayloadMapping
   let logger: Logger = console
   let config: Promise<C> = Promise.resolve({} as unknown) as Promise<C>
+  // this is just idenity function
   let successHandler: SuccessHandler<R, ReturnType<H>> = i => (i as unknown) as ReturnType<H>
   return {
     errorHandler() {
       return this
     },
-    successHandler() {
+    successHandler(handler) {
+      successHandler = handler
       return this
     },
     config(constructor) {
