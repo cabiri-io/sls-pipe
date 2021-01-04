@@ -20,7 +20,7 @@
     "pretty-quick": "pretty-quick",
     "prettify:fix": "prettier --write 'packages/**/*.{js,ts}'",
     "prettify": "prettier --check 'packages/**/*.{js,ts}'",
-    "publish:canary": "lerna publish --canary --force-publish=@cabiri-io/sls-env,@cabiri-io/sls-aws",
+    "publish:canary": "yarn build && lerna publish --canary --force-publish=@cabiri-io/sls-env,@cabiri-io/sls-aws",
     "publish:ci": "lerna publish patch --yes --create-release github --conventional-commits"
   },
   "workspaces": [
