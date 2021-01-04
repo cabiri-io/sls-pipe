@@ -18,7 +18,9 @@
   "dependencies": {
     "@cabiri-io/sls-env": "file:../sls-env"
   },
-  "devDependencies": {
+  "optionalDependencies": {
     "@types/aws-lambda": "^8.10.59"
+  },
+  "devDependencies": {
   }
 }
