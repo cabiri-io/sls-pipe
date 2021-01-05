@@ -1,4 +1,4 @@
-A sketch of domain langauage
+## A sketch of domain langauage
 
 ```ts
 // business logic
@@ -180,4 +180,18 @@ slsEnv.run({what we think is right})
 // ci
 
 real lambda 
+```
+
+## Release New Version
+
+Current workflow before applying full automated solution:
+
+1. make changes
+2. create PR and either link a package or use `publish:canary`
+3. once PR is reviewed publish package from `master`
+
+At the moment package is released manually using command-line from a developer machine using following command:
+
+```shell
+GH_TOKEN=<github_api_token> yarn publish:ci
 ```
