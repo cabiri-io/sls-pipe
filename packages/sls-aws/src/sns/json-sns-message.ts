@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-unresolved
 import type { Context, SNSEvent } from 'aws-lambda'
 
 import { PayloadError, PayloadParseError } from '../error/parse'

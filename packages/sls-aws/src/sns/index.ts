@@ -1,5 +1,4 @@
 import { EnvConfig, Handler, SlsEnvironment, environment } from '@cabiri-io/sls-env'
-// eslint-disable-next-line import/no-unresolved
 import type { Context, SNSEvent } from 'aws-lambda'
 import { jsonSNSMessage } from './json-sns-message'
 import { jsonSNSMessages } from './json-sns-messages'

@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-unresolved
 import type { APIGatewayProxyStructuredResultV2 } from 'aws-lambda'
 
 type StructuredResult<T, R> = APIGatewayProxyStructuredResultV2 & { mapper?: (t: T) => R }
