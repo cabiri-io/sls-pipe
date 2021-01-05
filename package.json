@@ -21,7 +21,7 @@
     "prettify:fix": "prettier --write 'packages/**/*.{js,ts}'",
     "prettify": "prettier --check 'packages/**/*.{js,ts}'",
     "publish:canary": "yarn build && lerna publish --canary --force-publish=@cabiri-io/sls-env,@cabiri-io/sls-aws",
-    "publish:ci": "lerna publish patch --create-release github --conventional-commits"
+    "publish:ci": "yarn build && lerna publish patch --create-release github --conventional-commits"
   },
   "workspaces": [
     "packages/*"
