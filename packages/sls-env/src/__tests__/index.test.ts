@@ -1,14 +1,13 @@
 // eslint-disable-next-line eslint-comments/disable-enable-pair
 /* eslint-disable @typescript-eslint/ban-types */
-import snakeCase from 'lodash.snakecase'
-import { Logger, environment } from '..'
+import { Handler, Logger, environment } from '..'
 
 type EmptyEvent = {}
 type EmptyContext = {}
 
 describe('serverless environment', () => {
   it('supports application', async () =>
-    environment<EmptyEvent, EmptyContext, void, void, string>()
+    environment<Handler<EmptyEvent, EmptyContext, string>, never, void, void>()
       .app(() => 'hello world!')
       .start({}, {})
       .then(result => expect(result).toBe('hello world!')))
@@ -18,36 +17,19 @@ describe('serverless environment', () => {
   type EventPayload = { event: MessageEvent; context: NameContext }
 
   it('supports passing an event and context to application', async () =>
-    environment<MessageEvent, NameContext, void, EventPayload, string>()
+    environment<Handler<MessageEvent, NameContext, string>, never, void, EventPayload>()
       .app(({ payload: { event, context } }) => `${event.message} ${context.name}!`)
       .start({ message: 'hello' }, { name: 'world' })
       .then(result => expect(result).toBe('hello world!')))
 
   describe('dependencies', () => {
-    it('supports adding named function as dependencies', async () => {
-      type BuildMessage = (message: string, name: string) => string
-      type BuildMessageDependencies = {
-        buildMessage: BuildMessage
-      }
-
-      const buildMessage: BuildMessage = (message, name) => `${message} ${name}!`
-
-      return environment<MessageEvent, NameContext, BuildMessageDependencies, EventPayload, string>()
-        .global(buildMessage)
-        .app(({ payload: { event, context }, dependencies: { buildMessage } }) =>
-          buildMessage(event.message, context.name)
-        )
-        .start({ message: 'hello' }, { name: 'world' })
-        .then(result => expect(result).toBe('hello world!'))
-    })
-
     it('supports adding object with named dependencies', async () => {
       type BuildMessage = (message: string, name: string) => string
       type BuildMessageDependencies = {
         buildMessage: BuildMessage
       }
 
-      return environment<MessageEvent, NameContext, BuildMessageDependencies, EventPayload, string>()
+      return environment<Handler<MessageEvent, NameContext, string>, never, BuildMessageDependencies, EventPayload>()
         .global({ buildMessage: (message: string, name: string) => `${message} ${name}!` })
         .app(({ payload: { event, context }, dependencies: { buildMessage } }) =>
           buildMessage(event.message, context.name)
@@ -56,19 +38,40 @@ describe('serverless environment', () => {
         .then(result => expect(result).toBe('hello world!'))
     })
 
-    it('supports adding through function arguments', async () => {
+    it('supports adding function which returns named dependencies', async () => {
       type BuildMessage = (message: string, name: string) => string
       type BuildMessageDependencies = {
         buildMessage: BuildMessage
       }
 
-      return environment<MessageEvent, NameContext, BuildMessageDependencies, EventPayload, string>()
-        .global('buildMessage', (message: string, name: string) => `${message} ${name}!`)
+      return environment<Handler<MessageEvent, NameContext, string>, never, BuildMessageDependencies, EventPayload>()
+        .global(() => ({
+          buildMessage: (message: string, name: string) => `${message} ${name}!`
+        }))
         .app(({ payload: { event, context }, dependencies: { buildMessage } }) =>
           buildMessage(event.message, context.name)
         )
         .start({ message: 'hello' }, { name: 'world' })
         .then(result => expect(result).toBe('hello world!'))
+    })
+
+    it('passes config and log as part of dependency factory function', async () => {
+      type BuildMessage = (message: string, name: string) => string
+      type BuildMessageDependencies = {
+        buildMessage: BuildMessage
+      }
+      type Config = { hello: string }
+
+      return environment<Handler<MessageEvent, NameContext, string>, Config, BuildMessageDependencies, EventPayload>()
+        .config({ hello: 'config' })
+        .global(({ config }) => ({
+          buildMessage: (message: string, name: string) => `${message} ${name} of ${config.hello}!`
+        }))
+        .app(({ payload: { event, context }, dependencies: { buildMessage } }) =>
+          buildMessage(event.message, context.name)
+        )
+        .start({ message: 'hello' }, { name: 'world' })
+        .then(result => expect(result).toBe('hello world of config!'))
     })
   })
 
@@ -87,8 +90,13 @@ describe('serverless environment', () => {
         buildMessage: BuildHelloWorldMessage
       }
 
-      return environment<MessageEvent, NameContext, BuildHelloWorldMessageDependencies, HelloWorldMessage, string>()
-        .global(buildMessage)
+      return environment<
+        Handler<MessageEvent, NameContext, string>,
+        never,
+        BuildHelloWorldMessageDependencies,
+        HelloWorldMessage
+      >()
+        .global({ buildMessage })
         .payload((event, context) => ({
           hello: event.message,
           world: context.name
@@ -100,7 +108,7 @@ describe('serverless environment', () => {
 
     it('fails when added multiple times', () =>
       expect(() =>
-        environment<EmptyEvent, EmptyContext, void, void, string>()
+        environment<Handler<EmptyEvent, EmptyContext, string>, never, void, void>()
           .app(() => 'hello world!')
           .payload(() => {})
           .payload(() => {})
@@ -109,7 +117,7 @@ describe('serverless environment', () => {
 
   describe('logger', () => {
     it('has default built in', () =>
-      environment<EmptyEvent, EmptyContext, void, void, void>()
+      environment<Handler<EmptyEvent, EmptyContext, void>, never, void, void>()
         .app(({ logger }) => expect(logger).toBeDefined())
         .start({}, {}))
 
@@ -121,7 +129,7 @@ describe('serverless environment', () => {
         }
       } as unknown) as Logger
 
-      return environment<EmptyEvent, EmptyContext, void, void, void>()
+      return environment<Handler<EmptyEvent, EmptyContext, void>, never, void, void>()
         .logger(logger)
         .app(({ logger }) => logger.debug('log message'))
         .start({}, {})
@@ -131,44 +139,74 @@ describe('serverless environment', () => {
     })
   })
 
-  describe('environment variables mapper', () => {
-    // how do we define environment variables
-    it('default to camel case', () => {
-      process.env.WORKSPACE = 'workspaceValue'
-      process.env.WORKSPACE_NAME = 'workspaceNameValue'
-      type EnvDependency = { env: { workspace: string; workspaceName: string } }
+  describe('application configuration', () => {
+    it('creates config from pure function', () => {
+      type AppConfig = {
+        message: string
+      }
 
-      return environment<EmptyEvent, EmptyContext, EnvDependency, void, void>()
-        .app(({ dependencies: { env } }) => {
-          expect(env.workspace).toBe('workspaceValue')
-          expect(env.workspaceName).toBe('workspaceNameValue')
+      return environment<Handler<EmptyEvent, EmptyContext, void>, AppConfig, never, void>()
+        .config(() => ({ message: 'hello' }))
+        .app(({ config }) => {
+          expect(config.message).toBe('hello')
         })
         .start({}, {})
     })
 
-    it('allows to override default variable name', () => {
-      process.env.WORKSPACE1 = 'workspace1Value'
-      process.env.WORKSPACE1_NAME = 'workspaceName1Value'
-      type EnvDependency = { env: { workspace_1: string; workspace_1_name: string } }
+    it('creates config from function returning promise', () => {
+      type AppConfig = {
+        message: string
+      }
 
-      return environment<EmptyEvent, EmptyContext, EnvDependency, void, void>({
-        envNameMapper: snakeCase
-      })
-        .app(({ dependencies: { env } }) => {
-          expect(env.workspace_1).toBe('workspace1Value')
-          expect(env.workspace_1_name).toBe('workspaceName1Value')
+      return environment<Handler<EmptyEvent, EmptyContext, void>, AppConfig, never, void>()
+        .config(async () => ({ message: 'hello' }))
+        .app(({ config }) => {
+          expect(config.message).toBe('hello')
         })
         .start({}, {})
+    })
+
+    it('creates config from value', () => {
+      type AppConfig = {
+        message: string
+      }
+
+      return environment<Handler<EmptyEvent, EmptyContext, void>, AppConfig, never, void>()
+        .config({ message: 'hello' })
+        .app(({ config }) => {
+          expect(config.message).toBe('hello')
+        })
+        .start({}, {})
+    })
+
+    it('creates config from Promise', () => {
+      type AppConfig = {
+        message: string
+      }
+
+      return environment<Handler<EmptyEvent, EmptyContext, void>, AppConfig, never, void>()
+        .config(Promise.resolve({ message: 'hello' }))
+        .app(({ config }) => {
+          expect(config.message).toBe('hello')
+        })
+        .start({}, {})
+    })
+
+    it.todo('create config from object factory')
+  })
+
+  describe('success handler configuration', () => {
+    it('allows to remap application result to handler result', async () => {
+      type AppResult = string
+      type HandlerResult = { message: string }
+      const result = await environment<Handler<EmptyEvent, EmptyContext, HandlerResult>, void, never, void, AppResult>()
+        .successHandler(message => ({ message }))
+        .app(() => 'app result')
+        .start({}, {})
+
+      expect(result).toEqual({ message: 'app result' })
     })
   })
-  // google run against express
-  // it('runs request / response environment', () => environment().run(request, response))
-  // it('runs google function environment', () => environment().run(event, context))
-  /*
-  const ecbMapping = {
-  environment: 'ENVIRONMENT',
-  serviceName: 'SERVICE_NAME',
-  workspace: 'WORKSPACE',
-}
-  */
+
+  // where and how are we going to add correllaction id
 })

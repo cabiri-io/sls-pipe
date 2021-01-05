@@ -59,7 +59,7 @@ module.exports = {
         devDependencies: ['**/__tests__/**']
       }
     ],
-    'import/no-unresolved': [2, { ignore: ['fsevents'] }],
+    'import/no-unresolved': [2, { ignore: ['fsevents', 'aws-lambda'] }],
     'import/order': 2,
     'no-console': 2,
     'no-restricted-imports': [
