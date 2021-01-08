@@ -104,7 +104,7 @@ const passThroughPayloadMapping = <E, C, P>(event: E, context: C) => (({ event, 
 //
 // config can define how the template behavies for example you can say to append configuration
 // you may have template and then an instance will add other develop configuration on top of that
-export const environment = <H extends Handler<any, any, any>, C, D, P, R = ReturnType<H>>(
+export const environment = <H extends Handler<any, any, any>, C, D, P = H, R = ReturnType<H>>(
   _config?: EnvConfig
 ): SlsEnvironment<H, C, D, P, R> => {
   let appConstructor: AppConstructor<P, C, D, R>

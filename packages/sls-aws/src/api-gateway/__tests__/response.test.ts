@@ -14,6 +14,31 @@ describe('structure response', () => {
     `)
   })
 
+  it('creates response without body when value is undefined', () => {
+    const successResponse = createSuccessResponse()
+
+    const result = successResponse()
+
+    expect(result).toMatchInlineSnapshot(`
+      Object {
+        "statusCode": 200,
+      }
+    `)
+  })
+
+  it('creates response with null body when value is null', () => {
+    const successResponse = createSuccessResponse()
+
+    const result = successResponse(null)
+
+    expect(result).toMatchInlineSnapshot(`
+      Object {
+        "body": "null",
+        "statusCode": 200,
+      }
+    `)
+  })
+
   it('allows override of status code', () => {
     type Message = { message: string }
     const successResponse = createSuccessResponse<Message, never>({ statusCode: 201 })

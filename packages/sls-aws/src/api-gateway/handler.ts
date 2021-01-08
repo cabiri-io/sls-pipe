@@ -8,7 +8,7 @@ type APIGatewayV2Handler<T = never> = Handler<APIGatewayProxyEventV2, Context, A
 // apiGatewayV2<D, P, R>
 // apiGatewayV2Config<D, P, R, C>
 // apiGatewayV2CustomResponse<D, P, R, HR, C = never>
-export const apiGatewayV2 = <D, P, R, C = never>(
+export const apiGatewayV2 = <D, P = APIGatewayV2Handler<never>, R = void, C = never>(
   config?: EnvConfig
 ): SlsEnvironment<APIGatewayV2Handler<never>, C, D, P, R> =>
   environment<APIGatewayV2Handler<never>, C, D, P, R>(config).successHandler(createSuccessResponse())
