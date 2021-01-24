@@ -1,1 +1,1 @@
-export { cognitoUserPool } from './user-pool-handler'
+export { cognitoUserPoolPreSignUp } from './user-pool-handler'

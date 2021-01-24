@@ -1,8 +1,8 @@
 import { EnvConfig, Handler, SlsEnvironment, environment } from '@cabiri-io/sls-env'
-import type { CognitoUserPoolTriggerEvent } from 'aws-lambda'
+import type { Context, PreSignUpTriggerEvent } from 'aws-lambda'
 
-type CognitoUserPoolHandler = Handler<CognitoUserPoolTriggerEvent, any, Promise<CognitoUserPoolTriggerEvent>>
+type CognitoUserPoolHandler = Handler<PreSignUpTriggerEvent, Context, Promise<PreSignUpTriggerEvent>>
 
-export const cognitoUserPool = <D, P = CognitoUserPoolTriggerEvent, R = CognitoUserPoolTriggerEvent, C = never>(
+export const cognitoUserPoolPreSignUp = <D, C = never>(
   config?: EnvConfig
-): SlsEnvironment<CognitoUserPoolHandler, C, D, P, R> => environment<CognitoUserPoolHandler, C, D, P, R>(config)
+): SlsEnvironment<CognitoUserPoolHandler, C, D> => environment<CognitoUserPoolHandler, C, D>(config)

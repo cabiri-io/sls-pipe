@@ -4,10 +4,6 @@ import { createSuccessResponse } from './response'
 
 type APIGatewayV2Handler<T = never> = Handler<APIGatewayProxyEventV2, Context, APIGatewayProxyResultV2<T>>
 
-// fixme: or maybe we create a different versions of apiGatewayV2 for example
-// apiGatewayV2<D, P, R>
-// apiGatewayV2Config<D, P, R, C>
-// apiGatewayV2CustomResponse<D, P, R, HR, C = never>
 export const apiGatewayV2 = <D, P = APIGatewayV2Handler<never>, R = void, C = never>(
   config?: EnvConfig
 ): SlsEnvironment<APIGatewayV2Handler<never>, C, D, P, R> =>
