@@ -216,7 +216,6 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
     start: async (event, context) => {
       // now you can really chain that nicely
       // maybe we start currying
-      // Promise.resolve().then(appConstructor(event, context))
       return (
         Promise.resolve()
           .then(() => {
