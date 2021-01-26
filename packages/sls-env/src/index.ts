@@ -6,11 +6,7 @@ import { ConfigConstructor, resolveConfig } from './config'
 import { ErrorHandler } from './error-handler'
 import { SuccessHandler } from './success-handler'
 import { DependenciesConstructor } from './dependencies'
-import { createDeferredValue, Deferred } from './utils/deferred'
 
-//
-// Application
-/////////////////////////////////////////////////////////////////////////////////////////////
 /**
  * Describe type for creating an application that is bootstrap as part of sls start up.
  *
@@ -93,7 +89,7 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
   // cached values
   // ------------------------------------
   let applicationDependencies: D
-  let applicationConfig: Deferred<C>
+  let applicationConfig: C
   return {
     /**
      * An instance of logger that is being used throughout the environment.
@@ -225,12 +221,11 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
         Promise.resolve()
           .then(() => {
             if (applicationConfig) {
-              return applicationConfig.promise
+              return applicationConfig
             }
-            applicationConfig = createDeferredValue()
             return resolveConfig(config, logger).then(resolvedConfig => {
-              applicationConfig.resolve(resolvedConfig)
-              return applicationConfig.promise
+              applicationConfig = resolvedConfig
+              return applicationConfig
             })
           })
           .then(config => {

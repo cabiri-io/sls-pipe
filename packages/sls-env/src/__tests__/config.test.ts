@@ -3,7 +3,7 @@ import { resolveConfig } from '../config'
 import { defaultLogger } from '../logger'
 import { EmptyContext, EmptyEvent } from './types'
 
-describe.only('config', () => {
+describe('config', () => {
   describe('resolver', () => {
     it('resolves config from function', async () => {
       type Message = { content: string }
@@ -138,6 +138,19 @@ describe.only('config', () => {
         short: 'short'
       })
     })
+
+    it('rejects with an error when it fails to resolve configuration', async () => {
+      type Message = { content: string }
+      const resolve = () =>
+        resolveConfig<Message>(
+          {
+            content: Promise.reject('error')
+          },
+          defaultLogger
+        )
+
+      await expect(resolve()).rejects.toThrowErrorMatchingInlineSnapshot(`"failed to initialise config 'content'"`)
+    })
   })
 
   describe('in context of environment', () => {
@@ -232,7 +245,13 @@ describe.only('config', () => {
       expect(Date.now() - start).toBeLessThan(1000)
     })
 
-    it('initialises config only once running concurrently', async () => {
+    /**
+     * We need to define what it means when a promise rejects when
+     * other promises are deferred.
+     * - should we retry other waiting request
+     * - should we reject them and create a new promise
+     */
+    it.skip('initialises config only once running concurrently', async () => {
       type AppConfig = {
         message: string
       }
@@ -251,6 +270,54 @@ describe.only('config', () => {
       await Promise.all([env({}, {}), env({}, {})])
       expect(Date.now() - start).toBeGreaterThanOrEqual(1000)
       expect(Date.now() - start).toBeLessThan(1200)
+    })
+
+    /**
+     * We need to define what it means when a promise rejects when
+     * other promises are deferred.
+     * - should we retry other waiting request
+     * - should we reject them and create a new promise
+     */
+    it.skip('initialises config only once running concurrently', async () => {
+      type AppConfig = {
+        message: string
+      }
+
+      let invocationCounter = 1
+      const env = environment<Handler<EmptyEvent, EmptyContext, void>, AppConfig, never, void>()
+        .config(
+          async () =>
+            new Promise(resolve => setTimeout(() => resolve({ message: 'hello' }), 1000 * invocationCounter++))
+        )
+        .app(({ config }) => {
+          expect(config.message).toBe('hello')
+        }).start
+
+      const start = Date.now()
+      await Promise.all([env({}, {}), env({}, {})])
+      expect(Date.now() - start).toBeGreaterThanOrEqual(1000)
+      expect(Date.now() - start).toBeLessThan(1200)
+    })
+
+    it('retries loading configuration when it fails to load', async () => {
+      type AppConfig = {
+        message: string
+      }
+
+      let invocationCounter = 1
+      const env = environment<Handler<EmptyEvent, EmptyContext, void>, AppConfig, void, void, string>()
+        .config(async () => {
+          if (invocationCounter === 1) {
+            invocationCounter++
+            return Promise.reject('error')
+          }
+
+          return Promise.resolve({ message: 'hello' })
+        })
+        .app(() => 'hello').start
+
+      await expect(env({}, {})).rejects.toThrow()
+      await expect(env({}, {})).resolves.toEqual('hello')
     })
   })
 })

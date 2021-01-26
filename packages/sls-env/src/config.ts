@@ -1,4 +1,5 @@
 import type { Logger } from './logger'
+import { isPromise } from './utils/is-promise'
 
 type ConfigFunctionConstructor<C> = (logger?: Logger) => C | Promise<C>
 type PropertyConfigFunctionConstructor<T> = (logger?: Logger) => T | Promise<T>
@@ -12,7 +13,11 @@ type ConfigConstructor<C> =
 const isFunction = (v: unknown): v is ConfigFunctionConstructor<unknown> =>
   typeof v === 'function' && v instanceof Function
 
-const isPromise = (v: unknown): v is Promise<unknown> => v instanceof Promise
+const configErrorHandler = (key: string, logger?: Logger) => (err: Error) => {
+  const message = `failed to initialise config '${key}'`
+  logger?.error({ err }, message)
+  throw Error(message)
+}
 
 const resolveConfig = async <C>(config: ConfigConstructor<C> | undefined | null, logger: Logger): Promise<C> => {
   if (!config) {
@@ -20,7 +25,7 @@ const resolveConfig = async <C>(config: ConfigConstructor<C> | undefined | null,
   }
 
   if (typeof config === 'function' && config instanceof Function) {
-    return Promise.resolve(config(logger))
+    return Promise.resolve(config(logger)).catch(configErrorHandler('config', logger))
   }
 
   if (config instanceof Promise) {
@@ -31,9 +36,13 @@ const resolveConfig = async <C>(config: ConfigConstructor<C> | undefined | null,
     const [key, value] = entry
     return acc.then(resolvedConfig => {
       if (isFunction(value)) {
-        return Promise.resolve(value(logger)).then(resolvedValue => ({ ...resolvedConfig, [key]: resolvedValue }))
+        return Promise.resolve(value(logger))
+          .then(resolvedValue => ({ ...resolvedConfig, [key]: resolvedValue }))
+          .catch(configErrorHandler(key, logger))
       } else if (isPromise(value)) {
-        return value.then(resolvedValue => ({ ...resolvedConfig, [key]: resolvedValue }))
+        return value
+          .then(resolvedValue => ({ ...resolvedConfig, [key]: resolvedValue }))
+          .catch(configErrorHandler(key, logger))
       } else {
         return { ...resolvedConfig, [key]: value }
       }
