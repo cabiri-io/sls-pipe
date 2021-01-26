@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0](https://github.com/cabiri-io/sls-pipe/compare/v0.1.0...v0.2.0) (2021-01-26)
+
+
+### Features
+
+* major refactoring and documentation ([#15](https://github.com/cabiri-io/sls-pipe/issues/15)) ([8bfeadc](https://github.com/cabiri-io/sls-pipe/commit/8bfeadc9379a01a8b371a04d4a8aafcb0c1c96f8))
+
+
+
+
+
 # [0.1.0](https://github.com/cabiri-io/sls-pipe/compare/v0.0.2...v0.1.0) (2021-01-05)
 
 
