@@ -256,5 +256,5 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
   }
 }
 
-export type { Handler, SlsEnvironment, EnvConfig }
+export type { Handler, SlsEnvironment, EnvConfig, Logger }
 export { environment }
