@@ -44,11 +44,56 @@ describe('environment config', () => {
         .app(({ context: { invocationId } }) => {
           expect(invocationId).toBe('event-context')
           return 'result'
+        })
+        .successHandler(({ invocationId }) => {
+          expect(invocationId).toBe('event-context')
+          return 'result'
         }).start
 
       await env({ content: 'event' }, 'context')
 
-      expect.assertions(4)
+      expect.assertions(5)
+    })
+
+    it('passes the invocation id to error handler', async () => {
+      type AppConfig = {
+        message: string
+      }
+      type Event = {
+        content: string
+      }
+      type Dependencies = {
+        message: string
+      }
+
+      const env = environment<Handler<Event, string, string>, AppConfig, Dependencies, string>({
+        invocationIdGenerator: (event, context) => `${event.content}-${context}`
+      })
+        .config(({ invocationId }) => {
+          expect(invocationId).toBe('event-context')
+          return Promise.reject({ message: 'hello' })
+        })
+        .global(({ invocationId }) => {
+          expect(invocationId).toBe('event-context')
+          return { message: 'hello' }
+        })
+        .payload((_event, _content, { invocationId }) => {
+          expect(invocationId).toBe('event-context')
+          return 'payload'
+        })
+        .app(({ context: { invocationId } }) => {
+          expect(invocationId).toBe('event-context')
+          return 'result'
+        })
+        .errorHandler(({ context: { invocationId } }) => {
+          expect(invocationId).toBe('event-context')
+          return 'result'
+        }).start
+
+      await env({ content: 'event' }, 'context').catch(() => {})
+
+      // one in config and one in error handler
+      expect.assertions(2)
     })
 
     it('changes invocation id based on the event', async () => {
