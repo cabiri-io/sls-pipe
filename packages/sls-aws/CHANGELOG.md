@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.3.0](https://github.com/cabiri-io/sls-pipe/compare/v0.2.3...v0.3.0) (2021-01-30)
+
+
+### Features
+
+* add logging and request id ([#24](https://github.com/cabiri-io/sls-pipe/issues/24)) ([30400b3](https://github.com/cabiri-io/sls-pipe/commit/30400b3e0762e97948bb1265f99bb7d1e123fe61))
+
+
+
+
+
 ## [0.2.3](https://github.com/cabiri-io/sls-pipe/compare/v0.2.2...v0.2.3) (2021-01-29)
 
 **Note:** Version bump only for package @cabiri-io/sls-aws
