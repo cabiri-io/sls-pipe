@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.4](https://github.com/cabiri-io/sls-pipe/compare/v0.3.3...v0.3.4) (2021-01-30)
+
+
+### Bug Fixes
+
+* api gateway success mapper ([bd5c2da](https://github.com/cabiri-io/sls-pipe/commit/bd5c2daab5128f6a83c5793168502171502ecab8))
+
+
+
+
+
 ## [0.3.3](https://github.com/cabiri-io/sls-pipe/compare/v0.3.2...v0.3.3) (2021-01-30)
 
 **Note:** Version bump only for package @cabiri-io/sls-aws
