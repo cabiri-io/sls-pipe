@@ -1,10 +1,13 @@
+import { Logger } from '@cabiri-io/sls-env'
 import { createSuccessResponse } from '../index'
 
 describe('structure response', () => {
-  it('creates response with sensible defaults', () => {
-    const successResponse = createSuccessResponse()
+  const auxiliaryData = { logger: {} as Logger, invocationId: '1234' }
 
-    const result = successResponse({ message: 'value' })
+  it('creates response with sensible defaults', () => {
+    const successResponse = createSuccessResponse<{ message: string }>()
+
+    const result = successResponse({ result: { message: 'value' }, ...auxiliaryData })
 
     expect(result).toMatchInlineSnapshot(`
       Object {
@@ -20,7 +23,7 @@ describe('structure response', () => {
   it('creates response without body when value is undefined', () => {
     const successResponse = createSuccessResponse()
 
-    const result = successResponse()
+    const result = successResponse({ ...auxiliaryData })
 
     expect(result).toMatchInlineSnapshot(`
       Object {
@@ -35,7 +38,7 @@ describe('structure response', () => {
   it('creates response with null body when value is null', () => {
     const successResponse = createSuccessResponse()
 
-    const result = successResponse(null)
+    const result = successResponse({ result: null, ...auxiliaryData })
 
     expect(result).toMatchInlineSnapshot(`
       Object {
@@ -51,7 +54,7 @@ describe('structure response', () => {
   it('creates response with default content type application/json', () => {
     const successResponse = createSuccessResponse()
 
-    const result = successResponse(null)
+    const result = successResponse({ result: null, ...auxiliaryData })
 
     expect(result).toMatchInlineSnapshot(`
       Object {
@@ -67,7 +70,7 @@ describe('structure response', () => {
   it('allows override content type header', () => {
     const successResponse = createSuccessResponse({ headers: { 'content-type': 'text/html' } })
 
-    const result = successResponse(null)
+    const result = successResponse({ result: null, ...auxiliaryData })
 
     expect(result).toMatchInlineSnapshot(`
       Object {
@@ -84,7 +87,7 @@ describe('structure response', () => {
     type Message = { message: string }
     const successResponse = createSuccessResponse<Message, never>({ statusCode: 201 })
 
-    const result = successResponse({ message: 'value' })
+    const result = successResponse({ result: { message: 'value' }, ...auxiliaryData })
 
     expect(result).toMatchInlineSnapshot(`
       Object {
@@ -105,7 +108,7 @@ describe('structure response', () => {
 
     const successResponse = createSuccessResponse<Message, Echo>({ statusCode: 201, mapper: message2Echo })
 
-    const result = successResponse({ message: 'hello' })
+    const result = successResponse({ result: { message: 'hello' }, ...auxiliaryData })
 
     expect(result).toMatchInlineSnapshot(`
       Object {

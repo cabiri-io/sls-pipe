@@ -5,6 +5,7 @@ type SuccessParams<R> = {
   logger: Logger
   invocationId: string
 }
+
 type SuccessHandler<R, O> = (params: SuccessParams<R>) => O
 
 export type { SuccessHandler, SuccessParams }
