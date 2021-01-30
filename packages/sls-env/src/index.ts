@@ -265,18 +265,16 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
             appConstructor({ logger, config, dependencies, payload, context: { invocationId } })
           ).then(result => ({
             result,
-            logger
+            logger,
+            invocationId
           }))
         })
-        .then(({ result, logger }) => {
+        .then(({ result, logger, invocationId }) => {
           // we use trace here because dependencies could have sensitive values
           logger.trace({ result }, 'invoked application with result')
-          return { result, logger }
+          return { result, logger, invocationId }
         })
-        .then(({ result, logger }) => {
-          const { invocationId } = invocationContext.get(event) ?? {}
-          return successHandler({ result, logger, invocationId })
-        })
+        .then(({ result, logger, invocationId }) => successHandler({ result, logger, invocationId }))
         .catch(error => {
           const { invocationId, logger } = invocationContext.get(event) ?? {}
           logger?.debug?.({ invocationId }, 'got an error')
