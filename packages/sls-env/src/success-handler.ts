@@ -7,4 +7,4 @@ type SuccessParams<R> = {
 }
 type SuccessHandler<R, O> = (params: SuccessParams<R>) => O
 
-export type { SuccessHandler }
+export type { SuccessHandler, SuccessParams }

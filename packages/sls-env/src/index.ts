@@ -4,14 +4,15 @@ import { HandlerPayload, PayloadConstructor, remapFunctionArgumentsToObject } fr
 import type { Handler } from './handler'
 import {
   EnvironmentConfig,
+  InvocationContextConstructor,
   InvocationIdConstructor,
   defaultInvocationId,
   defaultInvodationContext
 } from './environment-config'
 import type { InvocationContext } from './invocation-context'
 import { ConfigConstructor, resolveConfig } from './config'
-import { ErrorHandler, defaultErrorHandler } from './error-handler'
-import { SuccessHandler } from './success-handler'
+import { ErrorHandler, ErrorParams, defaultErrorHandler } from './error-handler'
+import { SuccessHandler, SuccessParams } from './success-handler'
 import { DependenciesConstructor } from './dependencies'
 import type { AppConstructor } from './application'
 
@@ -317,5 +318,15 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
   }
 }
 
-export type { Handler, SlsEnvironment, EnvironmentConfig, Logger, InvocationIdConstructor }
+export type {
+  Handler,
+  SlsEnvironment,
+  EnvironmentConfig,
+  Logger,
+  InvocationIdConstructor,
+  InvocationContextConstructor,
+  InvocationContext,
+  ErrorParams,
+  SuccessParams
+}
 export { environment }

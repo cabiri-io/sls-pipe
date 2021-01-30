@@ -17,4 +17,4 @@ function defaultErrorHandler<T>({ error, context }: ErrorParams): T {
 }
 
 export { defaultErrorHandler }
-export type { ErrorHandler }
+export type { ErrorHandler, ErrorParams }

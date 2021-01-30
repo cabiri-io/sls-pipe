@@ -34,5 +34,5 @@ type EnvironmentConfig<H extends Handler<any, any, any>> = {
 const defaultInvocationId = (): string => crypto.randomBytes(16).toString('hex')
 const defaultInvodationContext = (): Record<string, any> => ({})
 
-export type { EnvironmentConfig, InvocationIdConstructor }
+export type { EnvironmentConfig, InvocationIdConstructor, InvocationContextConstructor }
 export { defaultInvocationId, defaultInvodationContext }
