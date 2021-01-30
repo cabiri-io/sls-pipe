@@ -3,6 +3,8 @@ import { resolveConfig } from '../config'
 import { defaultLogger } from '../logger'
 import { EmptyContext, EmptyEvent } from './types'
 
+const invocationId = 'invocationId'
+
 describe('config', () => {
   describe('resolver', () => {
     it('resolves config from function', async () => {
@@ -11,7 +13,8 @@ describe('config', () => {
         () => ({
           content: 'message'
         }),
-        defaultLogger
+        defaultLogger,
+        invocationId
       )
 
       expect(result.content).toBe('message')
@@ -19,12 +22,16 @@ describe('config', () => {
 
     it('resolves config from function passes logger', async () => {
       type Message = { content: string }
-      const result = await resolveConfig<Message>(logger => {
-        expect(logger).toBe(defaultLogger)
-        return {
-          content: 'message'
-        }
-      }, defaultLogger)
+      const result = await resolveConfig<Message>(
+        ({ logger }) => {
+          expect(logger).toBe(defaultLogger)
+          return {
+            content: 'message'
+          }
+        },
+        defaultLogger,
+        invocationId
+      )
 
       expect(result.content).toBe('message')
     })
@@ -35,7 +42,8 @@ describe('config', () => {
         async () => ({
           content: 'message'
         }),
-        defaultLogger
+        defaultLogger,
+        invocationId
       )
 
       expect(result.content).toBe('message')
@@ -47,7 +55,8 @@ describe('config', () => {
         {
           content: 'message'
         },
-        defaultLogger
+        defaultLogger,
+        invocationId
       )
 
       expect(result.content).toBe('message')
@@ -59,7 +68,8 @@ describe('config', () => {
         Promise.resolve({
           content: 'message'
         }),
-        defaultLogger
+        defaultLogger,
+        invocationId
       )
 
       expect(result.content).toBe('message')
@@ -71,7 +81,8 @@ describe('config', () => {
         {
           content: () => 'message'
         },
-        defaultLogger
+        defaultLogger,
+        invocationId
       )
 
       expect(result.content).toBe('message')
@@ -81,12 +92,13 @@ describe('config', () => {
       type Message = { content: string }
       const result = await resolveConfig<Message>(
         {
-          content: logger => {
+          content: ({ logger }) => {
             expect(logger).toBe(defaultLogger)
             return 'message'
           }
         },
-        defaultLogger
+        defaultLogger,
+        invocationId
       )
 
       expect(result.content).toBe('message')
@@ -98,7 +110,8 @@ describe('config', () => {
         {
           content: async () => 'message'
         },
-        defaultLogger
+        defaultLogger,
+        invocationId
       )
 
       expect(result.content).toBe('message')
@@ -108,12 +121,13 @@ describe('config', () => {
       type Message = { content: string }
       const result = await resolveConfig<Message>(
         {
-          content: async logger => {
+          content: async ({ logger }) => {
             expect(logger).toBe(defaultLogger)
             return 'message'
           }
         },
-        defaultLogger
+        defaultLogger,
+        invocationId
       )
 
       expect(result.content).toBe('message')
@@ -128,7 +142,8 @@ describe('config', () => {
           description: 'desc',
           short: Promise.resolve('short')
         },
-        defaultLogger
+        defaultLogger,
+        invocationId
       )
 
       expect(result).toEqual({
@@ -146,7 +161,8 @@ describe('config', () => {
           {
             content: Promise.reject('error')
           },
-          defaultLogger
+          defaultLogger,
+          invocationId
         )
 
       await expect(resolve()).rejects.toThrowErrorMatchingInlineSnapshot(`"failed to initialise config 'content'"`)
@@ -213,8 +229,8 @@ describe('config', () => {
 
       return environment<Handler<EmptyEvent, EmptyContext, void>, AppConfig, never, void>()
         .config({
-          message: logger => {
-            expect(logger).toBe(defaultLogger)
+          message: ({ logger }) => {
+            expect(logger).toBeDefined()
             return 'hello'
           }
         })
@@ -314,6 +330,7 @@ describe('config', () => {
 
           return Promise.resolve({ message: 'hello' })
         })
+        .successHandler(({ result }) => result)
         .app(() => 'hello').start
 
       await expect(env({}, {})).rejects.toThrow()

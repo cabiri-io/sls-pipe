@@ -15,5 +15,11 @@
   },
   "homepage": "https://github.com/cabiri-io/sls-pipe#readme",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts"
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@types/pino": "^6.3.5"
+  },
+  "devDependencies": {
+    "pino": "^6.11.0"
+  }
 }
