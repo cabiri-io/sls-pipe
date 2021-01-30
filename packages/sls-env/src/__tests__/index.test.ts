@@ -1,12 +1,12 @@
 import { Handler, environment } from '..'
 import { EmptyContext, EmptyEvent } from './types'
 
-describe('serverless environment', () => {
+xdescribe('serverless environment', () => {
   it('creates basic environment', async () => {
     type AppResult = string
     type HandlerResult = { message: string }
     const result = await environment<Handler<EmptyEvent, EmptyContext, HandlerResult>, void, never, void, AppResult>()
-      .successHandler(message => ({ message }))
+      .successHandler(({ result }) => ({ message: result }))
       .app(() => 'app result')
       .start({}, {})
 

@@ -2,7 +2,7 @@ import { Logger } from './logger'
 type DependenciesConstructorParams<C> = {
   config: C
   logger: Logger
-  requestId?: string
+  invocationId: string
 }
 
 type DependenciesFunctionConstructor<C, D> = (params: DependenciesConstructorParams<C>) => D

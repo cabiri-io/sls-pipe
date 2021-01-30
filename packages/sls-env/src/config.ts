@@ -1,8 +1,9 @@
 import type { Logger } from './logger'
 import { isPromise } from './utils/is-promise'
+import { InvocationContext } from './invocation-context'
 
-type ConfigFunctionConstructor<C> = (logger?: Logger, requestId?: string) => C | Promise<C>
-type PropertyConfigFunctionConstructor<T> = (logger?: Logger, requestId?: string) => T | Promise<T>
+type ConfigFunctionConstructor<C> = (context: Required<InvocationContext>) => C | Promise<C>
+type PropertyConfigFunctionConstructor<T> = (context: Required<InvocationContext>) => T | Promise<T>
 
 type ConfigConstructor<C> =
   | ConfigFunctionConstructor<C>
@@ -22,14 +23,14 @@ const configErrorHandler = (key: string, logger?: Logger) => (err: Error) => {
 const resolveConfig = async <C>(
   config: ConfigConstructor<C> | undefined | null,
   logger: Logger,
-  requestId?: string
+  invocationId: string
 ): Promise<C> => {
   if (!config) {
     return {} as C
   }
 
   if (typeof config === 'function' && config instanceof Function) {
-    return Promise.resolve(config(logger, requestId)).catch(configErrorHandler('config', logger))
+    return Promise.resolve(config({ logger, invocationId })).catch(configErrorHandler('config', logger))
   }
 
   if (config instanceof Promise) {
@@ -40,7 +41,7 @@ const resolveConfig = async <C>(
     const [key, value] = entry
     return acc.then(resolvedConfig => {
       if (isFunction(value)) {
-        return Promise.resolve(value(logger, requestId))
+        return Promise.resolve(value({ logger, invocationId }))
           .then(resolvedValue => ({ ...resolvedConfig, [key]: resolvedValue }))
           .catch(configErrorHandler(key, logger))
       } else if (isPromise(value)) {

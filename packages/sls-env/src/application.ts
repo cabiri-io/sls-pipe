@@ -6,7 +6,7 @@ type AppParams<P, C, D> = {
   dependencies: D
   logger: Logger
   context: {
-    requestId?: string
+    invocationId: string
   }
 }
 

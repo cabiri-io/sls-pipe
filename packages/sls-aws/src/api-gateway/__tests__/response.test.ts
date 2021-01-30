@@ -9,6 +9,9 @@ describe('structure response', () => {
     expect(result).toMatchInlineSnapshot(`
       Object {
         "body": "{\\"message\\":\\"value\\"}",
+        "headers": Object {
+          "content-type": "application/json",
+        },
         "statusCode": 200,
       }
     `)
@@ -21,6 +24,9 @@ describe('structure response', () => {
 
     expect(result).toMatchInlineSnapshot(`
       Object {
+        "headers": Object {
+          "content-type": "application/json",
+        },
         "statusCode": 200,
       }
     `)
@@ -34,6 +40,41 @@ describe('structure response', () => {
     expect(result).toMatchInlineSnapshot(`
       Object {
         "body": "null",
+        "headers": Object {
+          "content-type": "application/json",
+        },
+        "statusCode": 200,
+      }
+    `)
+  })
+
+  it('creates response with default content type application/json', () => {
+    const successResponse = createSuccessResponse()
+
+    const result = successResponse(null)
+
+    expect(result).toMatchInlineSnapshot(`
+      Object {
+        "body": "null",
+        "headers": Object {
+          "content-type": "application/json",
+        },
+        "statusCode": 200,
+      }
+    `)
+  })
+
+  it('allows override content type header', () => {
+    const successResponse = createSuccessResponse({ headers: { 'content-type': 'text/html' } })
+
+    const result = successResponse(null)
+
+    expect(result).toMatchInlineSnapshot(`
+      Object {
+        "body": "null",
+        "headers": Object {
+          "content-type": "text/html",
+        },
         "statusCode": 200,
       }
     `)
@@ -48,6 +89,9 @@ describe('structure response', () => {
     expect(result).toMatchInlineSnapshot(`
       Object {
         "body": "{\\"message\\":\\"value\\"}",
+        "headers": Object {
+          "content-type": "application/json",
+        },
         "statusCode": 201,
       }
     `)
@@ -66,6 +110,9 @@ describe('structure response', () => {
     expect(result).toMatchInlineSnapshot(`
       Object {
         "body": "{\\"value\\":\\"hello\\"}",
+        "headers": Object {
+          "content-type": "application/json",
+        },
         "statusCode": 201,
       }
     `)

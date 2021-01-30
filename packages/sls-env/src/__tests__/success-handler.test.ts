@@ -7,11 +7,11 @@ describe('serverless environment', () => {
       type AppResult = string
       type HandlerResult = { message: string }
       const result = await environment<Handler<EmptyEvent, EmptyContext, HandlerResult>, void, never, void, AppResult>()
-        .successHandler(message => ({ message }))
+        .successHandler(({ result }) => ({ message: result }))
         .app(() => 'app result')
         .start({}, {})
 
-      expect(result).toEqual({ message: 'app result' })
+      expect(result).toEqual(expect.objectContaining({ message: 'app result' }))
     })
   })
 })

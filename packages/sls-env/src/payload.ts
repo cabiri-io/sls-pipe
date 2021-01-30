@@ -1,10 +1,10 @@
 import type { Handler } from './handler'
-import { Logger } from './logger'
+import { InvocationContext } from './invocation-context'
 
 type PayloadConstructor<H extends Handler<any, any, any>, R> = (
   event: Parameters<H>[0],
   context: Parameters<H>[1],
-  logger?: Logger
+  invocationContext: Required<InvocationContext>
 ) => Promise<R> | R
 
 /**

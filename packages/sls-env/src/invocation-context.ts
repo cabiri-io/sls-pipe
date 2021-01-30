@@ -2,7 +2,7 @@ import { Logger } from './logger'
 
 type InvocationContext = {
   logger?: Logger
-  requestId?: string
+  invocationId?: string
 }
 
 export type { InvocationContext }

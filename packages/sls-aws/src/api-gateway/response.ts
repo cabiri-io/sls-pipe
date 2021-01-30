@@ -6,10 +6,15 @@ export const createSuccessResponse = <T, R = never>(config?: StructuredResult<T,
   t?: T
 ): APIGatewayProxyStructuredResultV2 => {
   const { mapper, statusCode, ...defaultValues } = config ?? {}
+  const { headers } = defaultValues ?? {}
 
   const response = t === undefined ? {} : { body: JSON.stringify(mapper?.(t) ?? t) }
   return {
     statusCode: statusCode ?? 200,
+    headers: {
+      'content-type': 'application/json',
+      ...headers
+    },
     ...defaultValues,
     ...response
   }

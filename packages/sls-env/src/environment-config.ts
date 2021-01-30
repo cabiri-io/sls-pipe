@@ -2,7 +2,7 @@ import crypto from 'crypto'
 import { Logger } from './logger'
 import { Handler } from './handler'
 
-type RequestIdConstructor<H extends Handler<any, any, any>> = (
+type InvocationIdConstructor<H extends Handler<any, any, any>> = (
   event: Parameters<H>[0],
   context: Parameters<H>[1],
   logger: Logger
@@ -14,18 +14,18 @@ type RequestIdConstructor<H extends Handler<any, any, any>> = (
  * @param {logger}
  * @param {logger.mutable} if child will mutate logger
  * @param {logger.level} log level used by SLS
- * @param {requestId} a request id
+ * @param {invocationId} a request id
  */
 type EnvironmentConfig<H extends Handler<any, any, any>> = {
   logger?: {
-    mutable?: false
+    mutable?: boolean
     level?: string
   }
   // fixme: this needs to be able to
-  requestIdGenerator?: RequestIdConstructor<H>
+  invocationIdGenerator?: InvocationIdConstructor<H>
 }
 
-const defaultRequestId = (): string => crypto.randomBytes(16).toString('hex')
+const defaultInvocationId = (): string => crypto.randomBytes(16).toString('hex')
 
-export type { EnvironmentConfig }
-export { defaultRequestId }
+export type { EnvironmentConfig, InvocationIdConstructor }
+export { defaultInvocationId }
