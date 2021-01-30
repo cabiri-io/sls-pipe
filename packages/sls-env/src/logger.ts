@@ -6,7 +6,7 @@ interface LogFunction {
   (obj: Record<string, unknown>, msg?: string, ...args: Array<any>): void
 }
 
-interface Bindings {
+export interface Bindings {
   level?: string
   [key: string]: any
 }
@@ -68,12 +68,14 @@ const createMutableLogger = (logger: Logger): Logger => {
   const handler = {
     get(_: unknown, functionName: string) {
       return (...args: Array<unknown>) => {
-        if (functionName === 'child') {
+        if (functionName === 'child' && wrapperedLogger?.[functionName]) {
           //@ts-expect-error
           wrapperedLogger = wrapperedLogger?.[functionName]?.(...args) ?? wrapperedLogger
-        } else {
+        } else if (wrapperedLogger[functionName]) {
           //@ts-expect-error
           return wrapperedLogger[functionName](...args)
+        } else {
+          return
         }
       }
     }
