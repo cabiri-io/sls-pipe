@@ -2,7 +2,12 @@ import { PayloadDefinitionError } from './error/payload-definition-error'
 import { Logger, LoggerConstructor, createLogger, createMutableLogger, defaultLogger } from './logger'
 import { HandlerPayload, PayloadConstructor, remapFunctionArgumentsToObject } from './payload'
 import type { Handler } from './handler'
-import { EnvironmentConfig, InvocationIdConstructor, defaultInvocationId } from './environment-config'
+import {
+  EnvironmentConfig,
+  InvocationIdConstructor,
+  defaultInvocationId,
+  defaultInvodationContext
+} from './environment-config'
 import type { InvocationContext } from './invocation-context'
 import { ConfigConstructor, resolveConfig } from './config'
 import { ErrorHandler, defaultErrorHandler } from './error-handler'
@@ -44,6 +49,7 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
   const { invocationIdGenerator = defaultInvocationId, logger = {} } = _config ?? {}
   const logLevel = logger.level ?? 'info'
   const isLogMutable = logger?.mutable ?? true
+  const logInvocationContext = logger?.invocationContext ?? defaultInvodationContext
   let isLoggerInitialised = false
 
   // ------------------------------------
@@ -172,123 +178,141 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
     },
     // eslint-disable-next-line arrow-body-style
     start: async (event, context) => {
-      // create a new instance of logger
-      return Promise.resolve()
-        .then(() => {
-          if (!isLoggerInitialised) {
-            applicationLogger = createLogger(logLevel)(applicationLoggerConstructor)
-          }
+      // start execution
+      return (
+        Promise.resolve()
+          // initialise logger
+          .then(() => {
+            if (!isLoggerInitialised) {
+              applicationLogger = createLogger(logLevel)(applicationLoggerConstructor)
+            }
 
-          if (isLogMutable) {
-            return { logger: createMutableLogger(applicationLogger) }
-          }
-          return { logger: applicationLogger }
-        })
-        .then(({ logger }) => {
-          logger.debug('about to create logger')
-          invocationContext.set(event, { logger })
-          return { logger }
-        })
-        .then(({ logger }) => {
-          logger.debug('created logger')
-          return { logger }
-        })
-        .then(({ logger }) => {
-          logger.debug('about to create invocation id')
-          return Promise.resolve(invocationIdGenerator(event, context, logger)).then(invocationId => {
             if (isLogMutable) {
-              logger.child?.({ invocationId })
-              invocationContext.set(event, { logger, invocationId })
-              return { logger, invocationId }
-            } else {
-              const newLogger = logger.child?.({ invocationId }) ?? logger
-              invocationContext.set(event, { logger: newLogger, invocationId })
-              return { logger: newLogger, invocationId }
-            }
-          })
-        })
-        .then(({ logger, invocationId }) => {
-          logger.debug({ invocationId }, 'created request id')
-          return { logger, config, invocationId }
-        })
-        .then(({ logger, invocationId }) => {
-          logger.debug('about to resolve configuration')
-          if (applicationConfig) {
-            return { config: applicationConfig, logger, invocationId }
-          }
-          return resolveConfig(config, logger, invocationId).then(resolvedConfig => {
-            applicationConfig = resolvedConfig
-            return { config: applicationConfig, logger, invocationId }
-          })
-        })
-        .then(({ logger, config, invocationId }) => {
-          // we use trace here because config cloud have sensitive values
-          logger.trace({ config }, 'resolved configuration')
-          return { logger, config, invocationId }
-        })
-        .then(({ logger, config, invocationId }) => {
-          logger.trace('about to resolve dependencies')
-          if (!applicationDependencies) {
-            logger.info('creating dependencies')
-            if (typeof dependencies === 'function' && dependencies instanceof Function) {
-              applicationDependencies = dependencies({ config, logger, invocationId })
-            } else {
-              logger.trace('about to resolve dependencies')
-              applicationDependencies = dependencies
-            }
-          }
+              const mutableLogger = createMutableLogger(applicationLogger)
 
-          return { logger, config, dependencies: applicationDependencies, invocationId }
-        })
-        .then(({ logger, config, dependencies, invocationId }) => {
-          // we use trace here because dependencies could have sensitive values
-          logger.trace({ dependencies }, 'resolved dependencies')
-          return { logger, config, dependencies, invocationId }
-        })
-        .then(({ logger, config, dependencies, invocationId }) => {
-          logger.debug('about to create payload')
-          return Promise.resolve(payloadConstructor(event, context, { logger, invocationId })).then(payload => ({
-            payload,
-            dependencies,
-            config,
-            logger,
-            invocationId
-          }))
-        })
-        .then(({ logger, config, dependencies, payload, invocationId }) => {
-          // we use trace here because dependencies could have sensitive values
-          logger.trace({ payload }, 'created payload')
-          return { logger, config, dependencies, payload, invocationId }
-        })
-        .then(({ logger, config, dependencies, payload, invocationId }) => {
-          logger.info('about to invoke application')
-          return Promise.resolve(
-            appConstructor({ logger, config, dependencies, payload, context: { invocationId } })
-          ).then(result => ({
-            result,
-            logger,
-            invocationId
-          }))
-        })
-        .then(({ result, logger, invocationId }) => {
-          // we use trace here because dependencies could have sensitive values
-          logger.trace({ result }, 'invoked application with result')
-          return { result, logger, invocationId }
-        })
-        .then(({ result, logger, invocationId }) => successHandler({ result, logger, invocationId }))
-        .catch(error => {
-          const { invocationId, logger } = invocationContext.get(event) ?? {}
-          logger?.debug?.({ invocationId }, 'got an error')
-          // we use trace here because dependencies could have sensitive values
-          logger?.trace?.({ invocationId, error }, 'error trace')
-          return errorHandler({ error, context: { invocationId, logger } })
-        })
-        .finally(() => {
-          const { logger } = invocationContext.get(event) ?? {}
-          logger?.debug?.('about to clean current invocation')
-          invocationContext.delete(event)
-          logger?.trace?.('cleaned current invocation')
-        })
+              return { logger: mutableLogger }
+            }
+
+            return { logger: applicationLogger }
+          })
+          // register invocation context
+          .then(({ logger }) => {
+            logger.debug('about to create logger')
+            invocationContext.set(event, { logger })
+            return { logger }
+          })
+          .then(({ logger }) => {
+            logger.debug('created logger')
+            return { logger }
+          })
+          // create a child logger with additional context and invocation id
+          .then(({ logger }) => {
+            logger.debug('about to create invocation id')
+            return Promise.all([
+              Promise.resolve(invocationIdGenerator(event, context, logger)),
+              Promise.resolve(logInvocationContext(event, context, logger))
+            ]).then(([invocationId, additionalContext]) => {
+              if (isLogMutable) {
+                logger.child?.({ invocationId, ...additionalContext })
+                invocationContext.set(event, { logger, invocationId })
+                return { logger, invocationId }
+              } else {
+                const newLogger = logger.child?.({ invocationId, ...additionalContext }) ?? logger
+                invocationContext.set(event, { logger: newLogger, invocationId })
+                return { logger: newLogger, invocationId }
+              }
+            })
+          })
+          .then(({ logger, invocationId }) => {
+            logger.debug({ invocationId }, 'created request id')
+            return { logger, config, invocationId }
+          })
+          // resolve configuration
+          .then(({ logger, invocationId }) => {
+            logger.debug('about to resolve configuration')
+            if (applicationConfig) {
+              return { config: applicationConfig, logger, invocationId }
+            }
+            return resolveConfig(config, logger, invocationId).then(resolvedConfig => {
+              applicationConfig = resolvedConfig
+              return { config: applicationConfig, logger, invocationId }
+            })
+          })
+          .then(({ logger, config, invocationId }) => {
+            // we use trace here because config cloud have sensitive values
+            logger.trace({ config }, 'resolved configuration')
+            return { logger, config, invocationId }
+          })
+          // resolve dependencies
+          .then(({ logger, config, invocationId }) => {
+            logger.trace('about to resolve dependencies')
+            if (!applicationDependencies) {
+              logger.info('creating dependencies')
+              if (typeof dependencies === 'function' && dependencies instanceof Function) {
+                applicationDependencies = dependencies({ config, logger, invocationId })
+              } else {
+                logger.trace('about to resolve dependencies')
+                applicationDependencies = dependencies
+              }
+            }
+
+            return { logger, config, dependencies: applicationDependencies, invocationId }
+          })
+          .then(({ logger, config, dependencies, invocationId }) => {
+            // we use trace here because dependencies could have sensitive values
+            logger.trace({ dependencies }, 'resolved dependencies')
+            return { logger, config, dependencies, invocationId }
+          })
+          // create payload
+          .then(({ logger, config, dependencies, invocationId }) => {
+            logger.debug('about to create payload')
+            return Promise.resolve(payloadConstructor(event, context, { logger, invocationId })).then(payload => ({
+              payload,
+              dependencies,
+              config,
+              logger,
+              invocationId
+            }))
+          })
+          .then(({ logger, config, dependencies, payload, invocationId }) => {
+            // we use trace here because dependencies could have sensitive values
+            logger.trace({ payload }, 'created payload')
+            return { logger, config, dependencies, payload, invocationId }
+          })
+          // invoke application
+          .then(({ logger, config, dependencies, payload, invocationId }) => {
+            logger.info('about to invoke application')
+            return Promise.resolve(
+              appConstructor({ logger, config, dependencies, payload, context: { invocationId } })
+            ).then(result => ({
+              result,
+              logger,
+              invocationId
+            }))
+          })
+          .then(({ result, logger, invocationId }) => {
+            // we use trace here because dependencies could have sensitive values
+            logger.trace({ result }, 'invoked application with result')
+            return { result, logger, invocationId }
+          })
+          // process success response
+          .then(({ result, logger, invocationId }) => successHandler({ result, logger, invocationId }))
+          // process error response
+          .catch(error => {
+            const { invocationId, logger } = invocationContext.get(event) ?? {}
+            logger?.debug?.({ invocationId }, 'got an error')
+            // we use trace here because dependencies could have sensitive values
+            logger?.trace?.({ invocationId, error }, 'error trace')
+            return errorHandler({ error, context: { invocationId, logger } })
+          })
+          // clean up invocation context
+          .finally(() => {
+            const { logger } = invocationContext.get(event) ?? {}
+            logger?.debug?.('about to clean current invocation')
+            invocationContext.delete(event)
+            logger?.trace?.('cleaned current invocation')
+          })
+      )
     }
   }
 }

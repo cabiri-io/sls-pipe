@@ -5,30 +5,34 @@ import { EmptyContext, EmptyEvent } from './types'
 
 describe('serverless environment', () => {
   let logMessageStore: Array<string>
+  let logContextStore: Array<Record<string, any>>
   let logger: Logger
 
   beforeEach(() => {
     logMessageStore = []
+    logContextStore = []
 
     class TestLogger implements Logger {
-      prefix = ''
-      constructor(prefix: string) {
-        if (typeof prefix === 'string') {
-          this.prefix = prefix
-        }
+      context: Record<string, any>
+      constructor(context: any) {
+        this.context = context
       }
 
       trace(message: any) {
-        logMessageStore.push(`${this.prefix}${message}`)
+        logMessageStore.push(`${message}`)
+        logContextStore[logMessageStore.length - 1] = this.context
       }
       error(message: any) {
-        logMessageStore.push(`${this.prefix}${message}`)
+        logMessageStore.push(`${message}`)
+        logContextStore[logMessageStore.length - 1] = this.context
       }
       info(message: any) {
-        logMessageStore.push(`${this.prefix}${message}`)
+        logMessageStore.push(`${message}`)
+        logContextStore[logMessageStore.length - 1] = this.context
       }
       debug(message: any) {
-        logMessageStore.push(`${this.prefix}${message}`)
+        logMessageStore.push(`${message}`)
+        logContextStore[logMessageStore.length - 1] = this.context
       }
       //@ts-expect-error
       child(context: any) {
@@ -48,7 +52,9 @@ describe('serverless environment', () => {
       mutableLogger.child?.('test')
       mutableLogger.debug('message')
 
-      expect(logMessageStore).toContain('testmessage')
+      expect(logMessageStore).toContain('message')
+      const contextIndex = logMessageStore.findIndex(m => m === 'message')
+      expect(logContextStore[contextIndex]).toBe('test')
     })
   })
 
@@ -66,6 +72,34 @@ describe('serverless environment', () => {
         .then(() => {
           expect(logMessageStore).toContain('log message')
         }))
+
+    it('allows to inject custom context to logger during invocation', async () => {
+      type CustomEvent = { id: string }
+      type CustomContext = { version: number }
+      const env = environment<Handler<CustomEvent, CustomContext, void>, never, void, void>({
+        logger: {
+          mutable: true,
+          invocationContext: (event, context) => ({
+            ...event,
+            ...context
+          })
+        }
+      })
+        .logger(logger)
+        .app(({ logger }) => logger.debug('log message')).start
+
+      await env({ id: '1234' }, { version: 1 })
+
+      expect(logMessageStore).toContain('log message')
+      const contextIndex = logMessageStore.findIndex(m => m === 'log message')
+      expect(logContextStore[contextIndex]).toEqual(
+        expect.objectContaining({
+          id: '1234',
+          version: 1,
+          invocationId: expect.any(String)
+        })
+      )
+    })
 
     it('injects log at each step of invocations', async () => {
       type Config = { message: string }
