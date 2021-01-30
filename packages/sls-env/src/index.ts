@@ -211,61 +211,62 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
         })
         .then(({ logger, requestId }) => {
           logger.debug({ requestId }, 'created request id')
-          return { logger, config }
+          return { logger, config, requestId }
         })
-        .then(({ logger }) => {
+        .then(({ logger, requestId }) => {
           logger.debug('about to resolve configuration')
           if (applicationConfig) {
-            return { config: applicationConfig, logger }
+            return { config: applicationConfig, logger, requestId }
           }
-          return resolveConfig(config, logger).then(resolvedConfig => {
+          return resolveConfig(config, logger, requestId).then(resolvedConfig => {
             applicationConfig = resolvedConfig
-            return { config: applicationConfig, logger }
+            return { config: applicationConfig, logger, requestId }
           })
         })
-        .then(({ logger, config }) => {
+        .then(({ logger, config, requestId }) => {
           // we use trace here because config cloud have sensitive values
           logger.trace({ config }, 'resolved configuration')
-          return { logger, config }
+          return { logger, config, requestId }
         })
-        .then(({ logger, config }) => {
+        .then(({ logger, config, requestId }) => {
           logger.trace('about to resolve dependencies')
           if (!applicationDependencies) {
             logger.info('creating dependencies')
             if (typeof dependencies === 'function' && dependencies instanceof Function) {
-              applicationDependencies = dependencies({ config, logger })
+              applicationDependencies = dependencies({ config, logger, requestId })
             } else {
               logger.trace('about to resolve dependencies')
               applicationDependencies = dependencies
             }
           }
 
-          return { logger, config, dependencies: applicationDependencies }
+          return { logger, config, dependencies: applicationDependencies, requestId }
         })
-        .then(({ logger, config, dependencies }) => {
+        .then(({ logger, config, dependencies, requestId }) => {
           // we use trace here because dependencies could have sensitive values
           logger.trace({ dependencies }, 'resolved dependencies')
-          return { logger, config, dependencies }
+          return { logger, config, dependencies, requestId }
         })
-        .then(({ logger, config, dependencies }) => {
+        .then(({ logger, config, dependencies, requestId }) => {
           logger.debug('about to create payload')
           return Promise.resolve(payloadConstructor(event, context, logger)).then(payload => ({
             payload,
             dependencies,
             config,
-            logger
+            logger,
+            requestId
           }))
         })
-        .then(({ logger, config, dependencies, payload }) => {
+        .then(({ logger, config, dependencies, payload, requestId }) => {
           // we use trace here because dependencies could have sensitive values
           logger.trace({ payload }, 'created payload')
-          return { logger, config, dependencies, payload }
+          return { logger, config, dependencies, payload, requestId }
         })
-        .then(({ logger, config, dependencies, payload }) => {
-          const { requestId } = invocationContext.get(event) ?? {}
-          const context = { requestId }
+        .then(({ logger, config, dependencies, payload, requestId }) => {
           logger.info('about to invoke application')
-          return Promise.resolve(appConstructor({ logger, config, dependencies, payload, context })).then(result => ({
+          return Promise.resolve(
+            appConstructor({ logger, config, dependencies, payload, context: { requestId } })
+          ).then(result => ({
             result,
             logger
           }))
@@ -288,9 +289,9 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
         })
         .finally(() => {
           const { logger } = invocationContext.get(event) ?? {}
-          logger?.trace?.('invocation context before cleaning current invocation')
+          logger?.debug?.('about to clean current invocation')
           invocationContext.delete(event)
-          logger?.trace?.('invocation context after cleaning current invocation')
+          logger?.trace?.('cleaned current invocation')
         })
     }
   }

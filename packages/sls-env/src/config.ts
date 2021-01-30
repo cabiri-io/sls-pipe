@@ -1,8 +1,8 @@
 import type { Logger } from './logger'
 import { isPromise } from './utils/is-promise'
 
-type ConfigFunctionConstructor<C> = (logger?: Logger) => C | Promise<C>
-type PropertyConfigFunctionConstructor<T> = (logger?: Logger) => T | Promise<T>
+type ConfigFunctionConstructor<C> = (logger?: Logger, requestId?: string) => C | Promise<C>
+type PropertyConfigFunctionConstructor<T> = (logger?: Logger, requestId?: string) => T | Promise<T>
 
 type ConfigConstructor<C> =
   | ConfigFunctionConstructor<C>
@@ -19,13 +19,17 @@ const configErrorHandler = (key: string, logger?: Logger) => (err: Error) => {
   throw Error(message)
 }
 
-const resolveConfig = async <C>(config: ConfigConstructor<C> | undefined | null, logger: Logger): Promise<C> => {
+const resolveConfig = async <C>(
+  config: ConfigConstructor<C> | undefined | null,
+  logger: Logger,
+  requestId?: string
+): Promise<C> => {
   if (!config) {
     return {} as C
   }
 
   if (typeof config === 'function' && config instanceof Function) {
-    return Promise.resolve(config(logger)).catch(configErrorHandler('config', logger))
+    return Promise.resolve(config(logger, requestId)).catch(configErrorHandler('config', logger))
   }
 
   if (config instanceof Promise) {
@@ -36,7 +40,7 @@ const resolveConfig = async <C>(config: ConfigConstructor<C> | undefined | null,
     const [key, value] = entry
     return acc.then(resolvedConfig => {
       if (isFunction(value)) {
-        return Promise.resolve(value(logger))
+        return Promise.resolve(value(logger, requestId))
           .then(resolvedValue => ({ ...resolvedConfig, [key]: resolvedValue }))
           .catch(configErrorHandler(key, logger))
       } else if (isPromise(value)) {
