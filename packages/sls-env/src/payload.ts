@@ -1,6 +1,11 @@
 import type { Handler } from './handler'
+import { Logger } from './logger'
 
-type PayloadConstructor<H extends Handler<any, any, any>, R> = (event: Parameters<H>[0], context: Parameters<H>[1]) => R
+type PayloadConstructor<H extends Handler<any, any, any>, R> = (
+  event: Parameters<H>[0],
+  context: Parameters<H>[1],
+  logger?: Logger
+) => Promise<R> | R
 
 /**
  * A helper type to create a payload from a handler

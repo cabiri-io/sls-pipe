@@ -1,5 +1,10 @@
-import { Logger } from './logger'
+import { InvocationContext } from './invocation-context'
 
-type ErrorHandler<O> = (logger: Logger) => (e: Error) => O
+type ErrorParams = {
+  error: Error
+  context: InvocationContext
+}
+
+type ErrorHandler<O> = (error: ErrorParams) => O
 
 export type { ErrorHandler }
