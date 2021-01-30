@@ -7,10 +7,16 @@ describe('serverless environment', () => {
   let logMessageStore: Array<string>
   let logContextStore: Array<Record<string, any>>
   let logger: Logger
+  let clearStores: () => void
 
   beforeEach(() => {
     logMessageStore = []
     logContextStore = []
+
+    clearStores = () => {
+      while (logMessageStore.length > 0) logMessageStore.shift()
+      while (logContextStore.length > 0) logContextStore.shift()
+    }
 
     class TestLogger implements Logger {
       context: Record<string, any>
@@ -91,11 +97,25 @@ describe('serverless environment', () => {
       await env({ id: '1234' }, { version: 1 })
 
       expect(logMessageStore).toContain('log message')
-      const contextIndex = logMessageStore.findIndex(m => m === 'log message')
+      let contextIndex = logMessageStore.findIndex(m => m === 'log message')
       expect(logContextStore[contextIndex]).toEqual(
         expect.objectContaining({
           id: '1234',
           version: 1,
+          invocationId: expect.any(String)
+        })
+      )
+
+      clearStores()
+
+      await env({ id: '1235' }, { version: 2 })
+
+      expect(logMessageStore).toContain('log message')
+      contextIndex = logMessageStore.findIndex(m => m === 'log message')
+      expect(logContextStore[contextIndex]).toEqual(
+        expect.objectContaining({
+          id: '1235',
+          version: 2,
           invocationId: expect.any(String)
         })
       )
