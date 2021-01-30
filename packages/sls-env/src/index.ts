@@ -329,4 +329,4 @@ export type {
   ErrorParams,
   SuccessParams
 }
-export { environment }
+export { environment, defaultLogger }
