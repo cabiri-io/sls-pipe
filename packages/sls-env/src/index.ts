@@ -1,5 +1,5 @@
 import { PayloadDefinitionError } from './error/payload-definition-error'
-import { Logger, createLogger, createMutableLogger, defaultLogger } from './logger'
+import { Logger, LoggerConstructor, createLogger, createMutableLogger, defaultLogger } from './logger'
 import { HandlerPayload, PayloadConstructor, remapFunctionArgumentsToObject } from './payload'
 import type { Handler } from './handler'
 import { EnvironmentConfig, InvocationIdConstructor, defaultInvocationId } from './environment-config'
@@ -24,7 +24,7 @@ type SlsEnvironment<H extends Handler<any, any, any>, C, D, P = HandlerPayload<H
   errorHandler: (handler: ErrorHandler<ReturnType<H>>) => SlsEnvironment<H, C, D, P, R>
   successHandler: (handler: SuccessHandler<R, ReturnType<H>>) => SlsEnvironment<H, C, D, P, R>
   global: (dependencies: DependenciesConstructor<C, D>) => SlsEnvironment<H, C, D, P, R>
-  logger: (logger: Logger) => SlsEnvironment<H, C, D, P, R>
+  logger: (logger: LoggerConstructor) => SlsEnvironment<H, C, D, P, R>
   config: (config: ConfigConstructor<C>) => SlsEnvironment<H, C, D, P, R>
   payload: (payloadConstructor: PayloadConstructor<H, P>) => SlsEnvironment<H, C, D, P, R>
   app: (app: AppConstructor<P, C, D, R>) => SlsEnvironment<H, C, D, P, R>
@@ -51,7 +51,7 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
   // ------------------------------------
   let dependencies: DependenciesConstructor<C, D> = ({} as unknown) as DependenciesConstructor<C, D>
   let payloadConstructor: PayloadConstructor<H, P> = remapFunctionArgumentsToObject
-  let applicationLogger: Logger = defaultLogger
+  let applicationLoggerConstructor: LoggerConstructor = defaultLogger
   let config: ConfigConstructor<C> | undefined | null
   let successHandler: SuccessHandler<R, ReturnType<H>> = i => (i as unknown) as ReturnType<H>
   let errorHandler: ErrorHandler<ReturnType<H>> = defaultErrorHandler
@@ -61,6 +61,7 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
   // ------------------------------------
   let applicationDependencies: D
   let applicationConfig: C
+  let applicationLogger: Logger
   let invocationContext: WeakMap<Parameters<H>[0], InvocationContext> = new WeakMap()
   return {
     /**
@@ -73,7 +74,7 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
      * @param log
      */
     logger(log) {
-      applicationLogger = log
+      applicationLoggerConstructor = log
       return this
     },
     /**
@@ -175,7 +176,7 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
       return Promise.resolve()
         .then(() => {
           if (!isLoggerInitialised) {
-            applicationLogger = createLogger(logLevel)(applicationLogger)
+            applicationLogger = createLogger(logLevel)(applicationLoggerConstructor)
           }
 
           if (isLogMutable) {

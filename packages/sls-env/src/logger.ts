@@ -1,28 +1,15 @@
-/**
- * Follows closely pino logger type definition
- */
-interface LogFunction {
-  (msg: string, ...args: Array<any>): void
-  (obj: Record<string, unknown>, msg?: string, ...args: Array<any>): void
-}
+import type { Logger as PinoLogger } from 'pino'
 
-export interface Bindings {
-  level?: string
-  [key: string]: any
-}
-
-interface ChildFunction {
-  (bindings: Bindings): Logger
-}
+type LogLevel = 'error' | 'warn' | 'info' | 'debug' | 'trace'
 
 type Logger = {
-  error: LogFunction
-  warn: LogFunction
-  info: LogFunction
-  debug: LogFunction
-  trace: LogFunction
-  child?: ChildFunction
-} & { [k: string]: LogFunction }
+  error: PinoLogger['error']
+  warn: PinoLogger['warn']
+  info: PinoLogger['info']
+  debug: PinoLogger['debug']
+  trace: PinoLogger['trace']
+  child?: PinoLogger['child']
+} & { [key in string]: any }
 
 const objectToJson = (a: unknown) => (typeof a === 'object' ? JSON.stringify(a) : a)
 
@@ -30,13 +17,12 @@ type CreateLoggerConfig = { level?: string }
 
 type CreateLogger = (config?: CreateLoggerConfig) => Logger
 
-type LogLevel = 'error' | 'warn' | 'info' | 'debug' | 'trace'
-
 const log = (level: LogLevel, logLevel: string, args: Array<unknown>): void => {
   // eslint-disable-next-line no-console
   if (level === logLevel) console[level](args.map(objectToJson).join(', '))
 }
 
+//@ts-expect-error
 const defaultLoggerConstructor: CreateLogger = ({ level } = { level: 'info' }) => {
   const logLevel = level ?? 'info'
   const logger = {
@@ -55,7 +41,9 @@ const defaultLogger = defaultLoggerConstructor()
 
 const isFunction = (v: CreateLogger | Logger): v is CreateLogger => typeof v === 'function' && v instanceof Function
 
-const createLogger = (level: string) => (loggerConstrutor: CreateLogger | Logger): Logger => {
+type LoggerConstructor = Logger | CreateLogger
+
+const createLogger = (level: string) => (loggerConstrutor: LoggerConstructor): Logger => {
   if (isFunction(loggerConstrutor)) {
     return loggerConstrutor({ level })
   }
@@ -72,7 +60,6 @@ const createMutableLogger = (logger: Logger): Logger => {
           //@ts-expect-error
           wrapperedLogger = wrapperedLogger?.[functionName]?.(...args) ?? wrapperedLogger
         } else if (wrapperedLogger[functionName]) {
-          //@ts-expect-error
           return wrapperedLogger[functionName](...args)
         } else {
           return
@@ -84,5 +71,5 @@ const createMutableLogger = (logger: Logger): Logger => {
   return new Proxy<Logger>(({} as unknown) as Logger, handler)
 }
 
-export type { LogFunction, Logger }
+export type { Logger, LoggerConstructor }
 export { defaultLogger, defaultLoggerConstructor, createLogger, createMutableLogger }

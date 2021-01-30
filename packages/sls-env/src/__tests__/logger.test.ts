@@ -1,3 +1,4 @@
+import pino from 'pino'
 import { Handler, environment } from '..'
 import { Logger, createMutableLogger } from '../logger'
 import { EmptyContext, EmptyEvent } from './types'
@@ -96,6 +97,36 @@ describe('serverless environment', () => {
           expect(logMessageStore).toContain('dependencies log')
           expect(logMessageStore).toContain('payload log')
           expect(logMessageStore).toContain('app log')
+        })
+    })
+
+    it('checks compatibilit with pino logger', done => {
+      type Config = { message: string }
+      type Dependencies = { message: string }
+      return environment<Handler<EmptyEvent, EmptyContext, void>, Config, Dependencies, string>({
+        logger: { mutable: true }
+      })
+        .logger(pino)
+        .config(({ logger }) => {
+          logger.debug('config log')
+          return {
+            message: 'hello'
+          }
+        })
+        .global(({ logger }) => {
+          logger.debug('dependencies log')
+          return {
+            message: 'hello'
+          }
+        })
+        .payload((_event, _context, { logger }) => {
+          logger.debug('payload log')
+          return 'hello'
+        })
+        .app(({ logger }) => logger.debug('app log'))
+        .start({}, {})
+        .then(() => {
+          done()
         })
     })
   })
