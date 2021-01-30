@@ -8,6 +8,12 @@ type InvocationIdConstructor<H extends Handler<any, any, any>> = (
   logger: Logger
 ) => Promise<string> | string
 
+type InvocationContextConstructor<H extends Handler<any, any, any>> = (
+  event: Parameters<H>[0],
+  context: Parameters<H>[1],
+  logger: Logger
+) => Promise<Record<string, any>> | Record<string, any>
+
 /**
  * Descibe environment configuration
  *
@@ -20,12 +26,13 @@ type EnvironmentConfig<H extends Handler<any, any, any>> = {
   logger?: {
     mutable?: boolean
     level?: string
+    invocationContext?: InvocationContextConstructor<H>
   }
-  // fixme: this needs to be able to
   invocationIdGenerator?: InvocationIdConstructor<H>
 }
 
 const defaultInvocationId = (): string => crypto.randomBytes(16).toString('hex')
+const defaultInvodationContext = (): Record<string, any> => ({})
 
 export type { EnvironmentConfig, InvocationIdConstructor }
-export { defaultInvocationId }
+export { defaultInvocationId, defaultInvodationContext }
