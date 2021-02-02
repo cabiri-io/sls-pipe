@@ -4,7 +4,10 @@ import { createSuccessResponse } from './response'
 
 type APIGatewayV2Handler<T = never> = Handler<APIGatewayProxyEventV2, Context, APIGatewayProxyResultV2<T>>
 
-export const apiGatewayV2 = <D, P = APIGatewayV2Handler<never>, R = void, C = never>(
+const apiGatewayV2 = <D, P = APIGatewayV2Handler<never>, R = void, C = never>(
   config?: EnvironmentConfig<APIGatewayV2Handler<never>>
 ): SlsEnvironment<APIGatewayV2Handler<never>, C, D, P, R> =>
   environment<APIGatewayV2Handler<never>, C, D, P, R>(config).successHandler(createSuccessResponse())
+
+export type { APIGatewayV2Handler }
+export { apiGatewayV2 }
