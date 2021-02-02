@@ -14,7 +14,7 @@ import { ConfigConstructor, resolveConfig } from './config'
 import { ErrorHandler, ErrorParams, defaultErrorHandler } from './error-handler'
 import { SuccessHandler, SuccessParams } from './success-handler'
 import { DependenciesConstructor } from './dependencies'
-import type { AppConstructor, Application } from './application'
+import type { AppConstructor } from './application'
 
 /**
  * Describe type for creating an application that is bootstrap as part of sls start up.
@@ -328,6 +328,6 @@ export type {
   InvocationContext,
   ErrorParams,
   SuccessParams,
-  Application
+  AppConstructor as Application
 }
 export { environment, defaultLogger }
