@@ -1,6 +1,6 @@
 import { Logger } from './logger'
 
-type AppParams<P, C, D> = {
+type Application<P, C, D> = {
   payload: P
   config: C
   dependencies: D
@@ -26,6 +26,6 @@ type AppParams<P, C, D> = {
  *
  * @returns {Promise<R> | R} -
  */
-type AppConstructor<P, C, D, R> = (params: AppParams<P, C, D>) => R | Promise<R>
+type AppConstructor<P, C, D, R> = (params: Application<P, C, D>) => R | Promise<R>
 
-export type { AppConstructor }
+export type { AppConstructor, Application }
