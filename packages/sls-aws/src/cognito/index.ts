@@ -1,2 +1,2 @@
-export { cognitoUserPoolPreSignUp } from './user-pool-handler'
-export type { CognitoUserPoolHandler } from './user-pool-handler'
+export { cognitoUserPoolPreSignUp, cognitoUserPoolPreTokenGeneration } from './user-pool-handler'
+export type { PreSignUpHandler, PreTokenGenerationHandler } from './user-pool-handler'

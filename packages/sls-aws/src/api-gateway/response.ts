@@ -3,7 +3,7 @@ import type { SuccessParams } from '@cabiri-io/sls-env'
 
 type StructuredResult<T, R> = APIGatewayProxyStructuredResultV2 & { mapper?: (t: T) => R }
 
-export const createSuccessResponse = <T, R = never>(config?: StructuredResult<T, R extends never ? T : R>) => (
+export const createSuccessResponse = <T = any, R = never>(config?: StructuredResult<T, R extends never ? T : R>) => (
   params: SuccessParams<T>
 ): APIGatewayProxyStructuredResultV2 => {
   const { mapper, statusCode, ...defaultValues } = config ?? {}

@@ -1,7 +1,7 @@
 import { Logger } from './logger'
 
 type SuccessParams<R> = {
-  result: R
+  result?: R
   logger: Logger
   invocationId: string
 }

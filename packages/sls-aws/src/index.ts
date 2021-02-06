@@ -1,5 +1,5 @@
 export { snsMessage, snsMessages } from './sns'
 export { apiGatewayV2, createSuccessResponse } from './api-gateway'
 export type { APIGatewayV2Handler } from './api-gateway'
-export { cognitoUserPoolPreSignUp } from './cognito'
-export type { CognitoUserPoolHandler } from './cognito'
+export { cognitoUserPoolPreSignUp, cognitoUserPoolPreTokenGeneration } from './cognito'
+export type { PreSignUpHandler, PreTokenGenerationHandler } from './cognito'

@@ -7,6 +7,7 @@
   "scripts": {
     "clean": "git clean -dfqX -- ./node_modules **/{dist,node_modules}/ ./packages/*/tsconfig*tsbuildinfo ./coverage .eslintcache",
     "build": "tsc --build tsconfig.build.json",
+    "local:build": "npm run build && npm run lint && npm run test",
     "build:clean": "tsc --build tsconfig.build.json --clean",
     "watch": "tsc --build tsconfig.build.json --watch",
     "postinstall": "lerna run prepare && npm run build",
