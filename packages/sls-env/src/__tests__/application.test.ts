@@ -6,14 +6,14 @@ describe('serverless environment', () => {
     it('uses application to return response', async () =>
       environment<Handler<EmptyEvent, EmptyContext, string>, never, void, void>()
         .app(() => 'hello world!')
-        .successHandler(({ result }) => result)
+        .successHandler(({ result }) => result as string)
         .start({}, {})
         .then(result => expect(result).toBe('hello world!')))
 
     it('uses application to return promise based response', async () =>
       environment<Handler<EmptyEvent, EmptyContext, string>, never, void, void>()
         .app(async () => 'hello world!')
-        .successHandler(({ result }) => result)
+        .successHandler(({ result }) => result as string)
         .start({}, {})
         .then(result => expect(result).toBe('hello world!')))
 

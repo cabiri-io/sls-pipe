@@ -31,7 +31,7 @@ describe('serverless environment', () => {
           hello: event.message,
           world: context.name
         }))
-        .successHandler(({ result }) => result)
+        .successHandler(({ result }) => result as string)
         .app(({ payload, dependencies: { buildMessage } }) => buildMessage(payload))
         .start({ message: 'hello' }, { name: 'world' })
         .then(result => expect(result).toBe('hello world!'))

@@ -6,7 +6,7 @@ xdescribe('serverless environment', () => {
     type AppResult = string
     type HandlerResult = { message: string }
     const result = await environment<Handler<EmptyEvent, EmptyContext, HandlerResult>, void, never, void, AppResult>()
-      .successHandler(({ result }) => ({ message: result }))
+      .successHandler(({ result }) => ({ message: result as string }))
       .app(() => 'app result')
       .start({}, {})
 

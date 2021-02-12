@@ -1,14 +1,8 @@
-import { EnvironmentConfig, Handler, SlsEnvironment, SuccessParams, environment } from '@cabiri-io/sls-env'
+import { EnvironmentConfig, Handler, SlsEnvironment, environment } from '@cabiri-io/sls-env'
 import type { Context, PreSignUpTriggerEvent, PreTokenGenerationTriggerEvent } from 'aws-lambda'
+import { responseOrError } from '../reponse/response-or-error'
 
 type PreSignUpHandler = Handler<PreSignUpTriggerEvent, Context, Promise<PreSignUpTriggerEvent>>
-
-const responseOrError = <T>({ result }: SuccessParams<T>): T | never => {
-  if (result) {
-    return result
-  }
-  throw Error("expected event result to be present but it wasn't")
-}
 
 const cognitoUserPoolPreSignUp = <D, C = never>(
   config?: EnvironmentConfig<PreSignUpHandler>

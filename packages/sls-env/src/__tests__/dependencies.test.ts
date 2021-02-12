@@ -17,7 +17,7 @@ describe('serverless environment', () => {
         .app(({ payload: { event, context }, dependencies: { buildMessage } }) =>
           buildMessage(event.message, context.name)
         )
-        .successHandler(({ result }) => result)
+        .successHandler(({ result }) => result as string)
         .start({ message: 'hello' }, { name: 'world' })
         .then(result => expect(result).toBe('hello world!'))
     })
@@ -35,7 +35,7 @@ describe('serverless environment', () => {
         .app(({ payload: { event, context }, dependencies: { buildMessage } }) =>
           buildMessage(event.message, context.name)
         )
-        .successHandler(({ result }) => result)
+        .successHandler(({ result }) => result as string)
         .start({ message: 'hello' }, { name: 'world' })
         .then(result => expect(result).toBe('hello world!'))
     })
@@ -55,7 +55,7 @@ describe('serverless environment', () => {
         .app(({ payload: { event, context }, dependencies: { buildMessage } }) =>
           buildMessage(event.message, context.name)
         )
-        .successHandler(({ result }) => result)
+        .successHandler(({ result }) => result as string)
         .start({ message: 'hello' }, { name: 'world' })
         .then(result => expect(result).toBe('hello world of config!'))
     })

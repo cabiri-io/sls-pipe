@@ -49,6 +49,11 @@ jobs:
 
       - name: build packages
         run: yarn build
+
+      - name: test
+        run: yarn test
+        env:
+          CI: true
 # at the moment it is being release manually
 # - name: publish packages
 #   run: yarn publish:ci
