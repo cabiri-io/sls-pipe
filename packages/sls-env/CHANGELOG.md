@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.11](https://github.com/cabiri-io/sls-pipe/compare/v0.3.10...v0.3.11) (2021-02-12)
+
+
+### Bug Fixes
+
+* sns template, tests and add tests run part of master ([9aa4501](https://github.com/cabiri-io/sls-pipe/commit/9aa4501efe1aef50ce3ed6bad9aa40033d75aafa))
+
+
+
+
+
 ## [0.3.9](https://github.com/cabiri-io/sls-pipe/compare/v0.3.8...v0.3.9) (2021-02-06)
 
 **Note:** Version bump only for package @cabiri-io/sls-env
