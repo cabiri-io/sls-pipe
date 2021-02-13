@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.1](https://github.com/cabiri-io/sls-pipe/compare/v0.4.0...v0.4.1) (2021-02-13)
+
+
+### Bug Fixes
+
+* sns message to return response ([78f8aa1](https://github.com/cabiri-io/sls-pipe/commit/78f8aa1a0a3db9d58520f097bf32f405e7c9e7a9))
+
+
+
+
+
 # [0.4.0](https://github.com/cabiri-io/sls-pipe/compare/v0.3.11...v0.4.0) (2021-02-13)
 
 
