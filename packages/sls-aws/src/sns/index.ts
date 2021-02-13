@@ -1,6 +1,6 @@
 import { EnvironmentConfig, Handler, SlsEnvironment, environment } from '@cabiri-io/sls-env'
 import type { Context, SNSEvent } from 'aws-lambda'
-import { response, responseOrError } from '../reponse/response-or-error'
+import { response } from '../reponse/response-or-error'
 import { jsonSNSMessage } from './json-sns-message'
 import { jsonSNSMessages } from './json-sns-messages'
 
@@ -9,7 +9,7 @@ type SNSHandler = Handler<SNSEvent, Context, Promise<void>>
 export const snsMessage = <D, P, C = never>(
   config?: EnvironmentConfig<SNSHandler>
 ): SlsEnvironment<SNSHandler, C, D, P> =>
-  environment<SNSHandler, C, D, P>(config).payload(jsonSNSMessage).successHandler(responseOrError)
+  environment<SNSHandler, C, D, P>(config).payload(jsonSNSMessage).successHandler(response)
 
 export const snsMessages = <D, P, C = never>(
   config?: EnvironmentConfig<SNSHandler>
