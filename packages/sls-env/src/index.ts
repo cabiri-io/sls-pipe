@@ -112,15 +112,15 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
      *
      * A simple function which returns configuration object. It can also return a Promise.
      * @example
-     * global((logger) => ({timeout: parseInt(process.env.SERVICE_TIMEOUT, 10)}))
+     * config((logger) => ({timeout: parseInt(process.env.SERVICE_TIMEOUT, 10)}))
      *
      * A simple configuration object
      * @example
-     * global({timeout: 1000})
+     * config({timeout: 1000})
      *
      * An object containing mix of values and functions building configuration.
      * @example
-     * global({timeout: 1000, retryCount: async (logger) => ssmGetValue() })
+     * config({timeout: 1000, retryCount: async (logger) => ssmGetValue() })
      *
      * Each function has logger passed as a parameter.
      *
