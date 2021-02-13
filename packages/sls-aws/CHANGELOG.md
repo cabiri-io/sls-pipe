@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/cabiri-io/sls-pipe/compare/v0.3.11...v0.4.0) (2021-02-13)
+
+
+### Features
+
+* optional response for SNS and context app params ([24aa546](https://github.com/cabiri-io/sls-pipe/commit/24aa546f6570bf07cd11d4e02602e7db4cf69a5d))
+
+
+
+
+
 ## [0.3.11](https://github.com/cabiri-io/sls-pipe/compare/v0.3.10...v0.3.11) (2021-02-12)
 
 
