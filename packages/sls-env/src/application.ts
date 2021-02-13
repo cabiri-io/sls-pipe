@@ -1,14 +1,26 @@
 import { Logger } from './logger'
 
-type AppParams<P, C, D> = {
-  payload: P
-  config: C
-  dependencies: D
+type ContextAppParams = {
   logger: Logger
   context: {
     invocationId: string
   }
 }
+
+type AppPayloadParams<P> = {
+  payload: P
+} & ContextAppParams
+
+type AppPayloadDependenciesParams<P, D> = {
+  payload: P
+  dependencies: D
+} & ContextAppParams
+
+type AppParams<P, C, D> = {
+  payload: P
+  config: C
+  dependencies: D
+} & ContextAppParams
 
 /**
  * Describe type for creating an application that is bootstrap as part of sls start up.
@@ -28,4 +40,4 @@ type AppParams<P, C, D> = {
  */
 type AppConstructor<P, C, D, R> = (params: AppParams<P, C, D>) => R | Promise<R>
 
-export type { AppConstructor, AppParams }
+export type { AppConstructor, AppParams, ContextAppParams, AppPayloadDependenciesParams, AppPayloadParams }

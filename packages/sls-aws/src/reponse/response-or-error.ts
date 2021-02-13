@@ -6,4 +6,8 @@ const responseOrError = <T>({ result }: SuccessParams<T>): T | never => {
   }
   throw Error("expected event result to be present but it wasn't")
 }
-export { responseOrError }
+
+// todo: we need to review how do we work with `void`, `undefined` and `null` types
+const response = <T>({ result }: SuccessParams<T>): T | never => result as T
+
+export { responseOrError, response }
