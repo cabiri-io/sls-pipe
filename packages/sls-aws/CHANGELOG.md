@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/cabiri-io/sls-pipe/compare/v0.4.1...v0.5.0) (2021-02-21)
+
+
+### Features
+
+* add mapping for cognito custom message handler ([318ab34](https://github.com/cabiri-io/sls-pipe/commit/318ab342e06bd6f76ba28d024a972b7debd8f37a))
+
+
+
+
+
 ## [0.4.1](https://github.com/cabiri-io/sls-pipe/compare/v0.4.0...v0.4.1) (2021-02-13)
 
 
