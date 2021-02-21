@@ -1,5 +1,10 @@
 import { EnvironmentConfig, Handler, SlsEnvironment, environment } from '@cabiri-io/sls-env'
-import type { Context, PreSignUpTriggerEvent, PreTokenGenerationTriggerEvent } from 'aws-lambda'
+import type {
+  Context,
+  CustomMessageTriggerEvent,
+  PreSignUpTriggerEvent,
+  PreTokenGenerationTriggerEvent
+} from 'aws-lambda'
 import { responseOrError } from '../reponse/response-or-error'
 
 type PreSignUpHandler = Handler<PreSignUpTriggerEvent, Context, Promise<PreSignUpTriggerEvent>>
@@ -19,5 +24,12 @@ const cognitoUserPoolPreTokenGeneration = <D, C = never>(
 ): SlsEnvironment<PreTokenGenerationHandler, C, D> =>
   environment<PreTokenGenerationHandler, C, D>(config).successHandler(responseOrError)
 
-export type { PreSignUpHandler, PreTokenGenerationHandler }
-export { cognitoUserPoolPreSignUp, cognitoUserPoolPreTokenGeneration }
+type CustomMessageHandler = Handler<CustomMessageTriggerEvent, Context, Promise<CustomMessageTriggerEvent>>
+
+const cognitoUserPoolCustomMessage = <D, C = never>(
+  config?: EnvironmentConfig<CustomMessageHandler>
+): SlsEnvironment<CustomMessageHandler, C, D> =>
+  environment<CustomMessageHandler, C, D>(config).successHandler(responseOrError)
+
+export type { PreSignUpHandler, PreTokenGenerationHandler, CustomMessageHandler }
+export { cognitoUserPoolPreSignUp, cognitoUserPoolPreTokenGeneration, cognitoUserPoolCustomMessage }
