@@ -3,7 +3,8 @@ import type {
   Context,
   CustomMessageTriggerEvent,
   PreSignUpTriggerEvent,
-  PreTokenGenerationTriggerEvent
+  PreTokenGenerationTriggerEvent,
+  UserMigrationTriggerEvent
 } from 'aws-lambda'
 import { responseOrError } from '../reponse/response-or-error'
 
@@ -31,5 +32,17 @@ const cognitoUserPoolCustomMessage = <D, C = never>(
 ): SlsEnvironment<CustomMessageHandler, C, D> =>
   environment<CustomMessageHandler, C, D>(config).successHandler(responseOrError)
 
-export type { PreSignUpHandler, PreTokenGenerationHandler, CustomMessageHandler }
-export { cognitoUserPoolPreSignUp, cognitoUserPoolPreTokenGeneration, cognitoUserPoolCustomMessage }
+type UserMigrationHandler = Handler<UserMigrationTriggerEvent, Context, Promise<UserMigrationTriggerEvent>>
+
+const cognitoUserPoolMigration = <D, C = never>(
+  config?: EnvironmentConfig<UserMigrationHandler>
+): SlsEnvironment<UserMigrationHandler, C, D> =>
+  environment<UserMigrationHandler, C, D>(config).successHandler(responseOrError)
+
+export type { PreSignUpHandler, PreTokenGenerationHandler, CustomMessageHandler, UserMigrationHandler }
+export {
+  cognitoUserPoolPreSignUp,
+  cognitoUserPoolPreTokenGeneration,
+  cognitoUserPoolCustomMessage,
+  cognitoUserPoolMigration
+}
