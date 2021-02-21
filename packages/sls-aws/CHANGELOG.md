@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.6.0](https://github.com/cabiri-io/sls-pipe/compare/v0.5.1...v0.6.0) (2021-02-21)
+
+
+### Features
+
+* add mapping for cognito pool migration handler ([97564dd](https://github.com/cabiri-io/sls-pipe/commit/97564dd2a81c7623bc4b74d0dcf7b0b608ad43ca))
+
+
+
+
+
 ## [0.5.1](https://github.com/cabiri-io/sls-pipe/compare/v0.5.0...v0.5.1) (2021-02-21)
 
 **Note:** Version bump only for package @cabiri-io/sls-aws
