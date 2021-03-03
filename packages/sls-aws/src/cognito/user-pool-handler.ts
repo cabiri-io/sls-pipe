@@ -2,11 +2,13 @@ import { EnvironmentConfig, Handler, SlsEnvironment, environment } from '@cabiri
 import type {
   Context,
   CustomMessageTriggerEvent,
+  PostConfirmationTriggerEvent,
   PreSignUpTriggerEvent,
   PreTokenGenerationTriggerEvent,
   UserMigrationTriggerEvent
 } from 'aws-lambda'
 import { responseOrError } from '../reponse/response-or-error'
+import type { CustomEmailSenderTriggerHandler } from './custom-email-sender'
 
 type PreSignUpHandler = Handler<PreSignUpTriggerEvent, Context, Promise<PreSignUpTriggerEvent>>
 
@@ -39,10 +41,28 @@ const cognitoUserPoolMigration = <D, C = never>(
 ): SlsEnvironment<UserMigrationHandler, C, D> =>
   environment<UserMigrationHandler, C, D>(config).successHandler(responseOrError)
 
+type PostConfirmationHandler = Handler<PostConfirmationTriggerEvent, Context, Promise<PostConfirmationTriggerEvent>>
+
+const cognitoUserPoolPostConfirmation = <D, C = never>(
+  config?: EnvironmentConfig<PostConfirmationHandler>
+): SlsEnvironment<PostConfirmationHandler, C, D> =>
+  environment<PostConfirmationHandler, C, D>(config).successHandler(responseOrError)
+
+/* At the moment mapping is missing in lambda types */
+
+type CustomEmailSenderHandler = Handler<CustomEmailSenderTriggerHandler, Context, Promise<void>>
+
+const cognitoUserPoolCustomEmailSender = <D, C = never>(
+  config?: EnvironmentConfig<CustomEmailSenderHandler>
+): SlsEnvironment<CustomEmailSenderHandler, C, D> =>
+  environment<CustomEmailSenderHandler, C, D>(config).successHandler(responseOrError)
+
 export type { PreSignUpHandler, PreTokenGenerationHandler, CustomMessageHandler, UserMigrationHandler }
 export {
   cognitoUserPoolPreSignUp,
   cognitoUserPoolPreTokenGeneration,
   cognitoUserPoolCustomMessage,
-  cognitoUserPoolMigration
+  cognitoUserPoolMigration,
+  cognitoUserPoolPostConfirmation,
+  cognitoUserPoolCustomEmailSender
 }
