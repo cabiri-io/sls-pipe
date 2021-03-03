@@ -8,7 +8,7 @@ import type {
   UserMigrationTriggerEvent
 } from 'aws-lambda'
 import { responseOrError } from '../reponse/response-or-error'
-import type { CustomEmailSenderTriggerHandler } from './custom-email-sender'
+import type { CustomEmailSenderTriggerEvent } from './custom-email-sender'
 
 type PreSignUpHandler = Handler<PreSignUpTriggerEvent, Context, Promise<PreSignUpTriggerEvent>>
 
@@ -50,7 +50,7 @@ const cognitoUserPoolPostConfirmation = <D, C = never>(
 
 /* At the moment mapping is missing in lambda types */
 
-type CustomEmailSenderHandler = Handler<CustomEmailSenderTriggerHandler, Context, Promise<void>>
+type CustomEmailSenderHandler = Handler<CustomEmailSenderTriggerEvent, Context, Promise<CustomEmailSenderTriggerEvent>>
 
 const cognitoUserPoolCustomEmailSender = <D, C = never>(
   config?: EnvironmentConfig<CustomEmailSenderHandler>

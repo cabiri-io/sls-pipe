@@ -20,4 +20,4 @@ type CustomEmailSenderTriggerEvent =
 
 type CustomEmailSenderTriggerHandler = Handler<CustomEmailSenderTriggerEvent>
 
-export type { CustomEmailSenderTriggerHandler, BaseCustomEmailSenderTriggerEvent }
+export type { CustomEmailSenderTriggerHandler, BaseCustomEmailSenderTriggerEvent, CustomEmailSenderTriggerEvent }
