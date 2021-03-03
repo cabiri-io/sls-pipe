@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.7.0](https://github.com/cabiri-io/sls-pipe/compare/v0.6.0...v0.7.0) (2021-03-03)
+
+
+### Features
+
+* post confirmation and custom email sender cognito handlers ([153bb14](https://github.com/cabiri-io/sls-pipe/commit/153bb141c7eb6937491835ec8b108766f488d631))
+
+
+
+
+
 # [0.6.0](https://github.com/cabiri-io/sls-pipe/compare/v0.5.1...v0.6.0) (2021-02-21)
 
 
