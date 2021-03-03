@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.1](https://github.com/cabiri-io/sls-pipe/compare/v0.7.0...v0.7.1) (2021-03-03)
+
+
+### Bug Fixes
+
+* incorrect type for custom email sender ([dca1bb2](https://github.com/cabiri-io/sls-pipe/commit/dca1bb26367d1f6e74041bcb57b10a3942203893))
+
+
+
+
+
 # [0.7.0](https://github.com/cabiri-io/sls-pipe/compare/v0.6.0...v0.7.0) (2021-03-03)
 
 
