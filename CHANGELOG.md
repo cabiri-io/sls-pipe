@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.8.0](https://github.com/cabiri-io/sls-pipe/compare/v0.7.1...v0.8.0) (2021-03-09)
+
+
+### Features
+
+* add query and body payload support and default to body payload for api gateway ([c40ab25](https://github.com/cabiri-io/sls-pipe/commit/c40ab25f74ec3a743c858c7c9879313de266005e))
+
+
+
+
+
 ## [0.7.1](https://github.com/cabiri-io/sls-pipe/compare/v0.7.0...v0.7.1) (2021-03-03)
 
 
