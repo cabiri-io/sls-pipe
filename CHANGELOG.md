@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.8.1](https://github.com/cabiri-io/sls-pipe/compare/v0.8.0...v0.8.1) (2021-03-09)
+
+
+### Bug Fixes
+
+* export all api gateway functions ([49f0232](https://github.com/cabiri-io/sls-pipe/commit/49f0232038cb06176a6e295eebfaaa8d7ec6b7c7))
+
+
+
+
+
 # [0.8.0](https://github.com/cabiri-io/sls-pipe/compare/v0.7.1...v0.8.0) (2021-03-09)
 
 
