@@ -1,5 +1,4 @@
 import { Handler, environment } from '..'
-import { EmptyContext, EmptyEvent } from './types'
 
 describe('serverless environment', () => {
   type MessageEvent = { message: string }
@@ -36,13 +35,5 @@ describe('serverless environment', () => {
         .start({ message: 'hello' }, { name: 'world' })
         .then(result => expect(result).toBe('hello world!'))
     })
-
-    it('fails when added multiple times', () =>
-      expect(() =>
-        environment<Handler<EmptyEvent, EmptyContext, string>, never, void, void>()
-          .app(() => 'hello world!')
-          .payload(() => {})
-          .payload(() => {})
-      ).toThrow())
   })
 })

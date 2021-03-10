@@ -1,4 +1,3 @@
-import { PayloadDefinitionError } from './error/payload-definition-error'
 import { Logger, LoggerConstructor, createLogger, createMutableLogger, defaultLogger } from './logger'
 import { HandlerPayload, PayloadConstructor, remapFunctionArgumentsToObject } from './payload'
 import type { Handler } from './handler'
@@ -164,11 +163,6 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
      * @param constructor
      */
     payload(constructor) {
-      if (payloadConstructor !== remapFunctionArgumentsToObject) {
-        throw new PayloadDefinitionError(
-          'you can configure payload constructor once, otherwise you unintentionally override configuration'
-        )
-      }
       payloadConstructor = constructor
       return this
     },
