@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.9.0](https://github.com/cabiri-io/sls-pipe/compare/v0.8.2...v0.9.0) (2021-03-11)
+
+
+### Features
+
+* add payload path parameter support for api gateway ([4d72a91](https://github.com/cabiri-io/sls-pipe/commit/4d72a91ada26b8af7ba9d0426c925f9cc4052abe))
+
+
+
+
+
 ## [0.8.2](https://github.com/cabiri-io/sls-pipe/compare/v0.8.1...v0.8.2) (2021-03-10)
 
 **Note:** Version bump only for package @cabiri-io/sls-aws
