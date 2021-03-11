@@ -4,4 +4,6 @@ const bodyToPayload = <T>(event: APIGatewayProxyEventV2): T => JSON.parse(event.
 
 const queryParamsToPayload = <T>(event: APIGatewayProxyEventV2): T => (event.queryStringParameters as unknown) as T
 
-export { bodyToPayload, queryParamsToPayload }
+const pathParamsToPayload = <T>(event: APIGatewayProxyEventV2): T => (event.pathParameters as unknown) as T
+
+export { bodyToPayload, queryParamsToPayload, pathParamsToPayload }

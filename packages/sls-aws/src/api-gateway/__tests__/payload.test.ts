@@ -1,5 +1,6 @@
 import { APIGatewayProxyEventV2 } from 'aws-lambda'
 import { bodyToPayload, queryParamsToPayload } from '../index'
+import { pathParamsToPayload } from '../payload'
 
 describe('payload', () => {
   describe('body', () => {
@@ -30,10 +31,22 @@ describe('payload', () => {
     })
   })
 
-  describe('parameters', () => {
+  describe('query parameters', () => {
     it('convert body to payload', () => {
       const result = queryParamsToPayload<{ message: string }>(({
         queryStringParameters: { message: 'hello' }
+      } as unknown) as APIGatewayProxyEventV2)
+
+      expect(result).toEqual({
+        message: 'hello'
+      })
+    })
+  })
+
+  describe('path parameters', () => {
+    it('convert body to payload', () => {
+      const result = pathParamsToPayload<{ message: string }>(({
+        pathParameters: { message: 'hello' }
       } as unknown) as APIGatewayProxyEventV2)
 
       expect(result).toEqual({
