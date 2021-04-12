@@ -5,8 +5,8 @@ import {
   EnvironmentConfig,
   InvocationContextConstructor,
   InvocationIdConstructor,
-  defaultInvocationId,
-  defaultInvodationContext
+  defaultInvocationContext,
+  defaultInvocationId
 } from './environment-config'
 import type { InvocationContext } from './invocation-context'
 import { ConfigConstructor, resolveConfig } from './config'
@@ -55,7 +55,7 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
   const { invocationIdGenerator = defaultInvocationId, logger = {} } = _config ?? {}
   const logLevel = logger.level ?? 'info'
   const isLogMutable = logger?.mutable ?? true
-  const logInvocationContext = logger?.invocationContext ?? defaultInvodationContext
+  const logInvocationContext = logger?.invocationContext ?? defaultInvocationContext
   let isLoggerInitialised = false
 
   // ------------------------------------

@@ -12,10 +12,10 @@ type InvocationContextConstructor<H extends Handler<any, any, any>> = (
   event: Parameters<H>[0],
   context: Parameters<H>[1],
   logger: Logger
-) => Promise<Record<string, any>> | Record<string, any>
+) => Promise<InvocationContext> | InvocationContext
 
 /**
- * Descibe environment configuration
+ * Describe environment configuration
  *
  * @param {logger}
  * @param {logger.mutable} if child will mutate logger
@@ -32,7 +32,16 @@ type EnvironmentConfig<H extends Handler<any, any, any>> = {
 }
 
 const defaultInvocationId = (): string => crypto.randomBytes(16).toString('hex')
-const defaultInvodationContext = (): Record<string, any> => ({})
 
-export type { EnvironmentConfig, InvocationIdConstructor, InvocationContextConstructor }
-export { defaultInvocationId, defaultInvodationContext }
+interface InvocationContext extends Record<string, any> {
+  awsRequestId?: string
+  sha?: string
+}
+
+const defaultInvocationContext = (awsRequestId: string, sha: string): InvocationContext => ({
+  awsRequestId: awsRequestId,
+  sha: sha
+})
+
+export type { EnvironmentConfig, InvocationIdConstructor, InvocationContextConstructor, InvocationContext }
+export { defaultInvocationId, defaultInvocationContext }
