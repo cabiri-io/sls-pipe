@@ -38,10 +38,7 @@ interface InvocationContext extends Record<string, any> {
   sha?: string
 }
 
-const defaultInvocationContext = (awsRequestId: string, sha: string): InvocationContext => ({
-  awsRequestId: awsRequestId,
-  sha: sha
-})
+const defaultInvocationContext = (): InvocationContext => ({})
 
 export type { EnvironmentConfig, InvocationIdConstructor, InvocationContextConstructor, InvocationContext }
 export { defaultInvocationId, defaultInvocationContext }
