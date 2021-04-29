@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.11.0](https://github.com/cabiri-io/sls-pipe/compare/v0.9.0...v0.11.0) (2021-04-29)
+
+
+### Features
+
+* sqs handler ([#32](https://github.com/cabiri-io/sls-pipe/issues/32)) ([a8c4cd5](https://github.com/cabiri-io/sls-pipe/commit/a8c4cd52503536ea34257a6e7e602a4345b36ae7))
+
+
+
+
+
 # [0.10.0](https://github.com/cabiri-io/sls-pipe/compare/v0.9.0...v0.10.0) (2021-04-29)
 
 
