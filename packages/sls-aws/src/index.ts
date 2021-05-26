@@ -1,4 +1,5 @@
 export { snsMessage, snsMessages } from './sns'
 export { sqsMessage, sqsMessages } from './sqs'
+export { eventBridgeMessage } from './eventbridge'
 export * from './api-gateway'
 export * from './cognito'
