@@ -1,11 +1,16 @@
 import { Logger } from './logger'
-type DependenciesConstructorParams<C> = {
+type DependenciesConstructorParams<C, P> = {
   config: C
+  payload: P
   logger: Logger
   invocationId: string
 }
 
-type DependenciesFunctionConstructor<C, D> = (params: DependenciesConstructorParams<C>) => D
-type DependenciesConstructor<C, D> = DependenciesFunctionConstructor<C, D> | D
+type DependenciesConfig = {
+  cache?: boolean
+}
 
-export type { DependenciesConstructor }
+type DependenciesFunctionConstructor<C, P, D> = (params: DependenciesConstructorParams<C, P>) => D
+type DependenciesConstructor<C, P, D> = DependenciesFunctionConstructor<C, P, D> | D
+
+export type { DependenciesConstructor, DependenciesConfig }
