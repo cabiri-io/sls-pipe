@@ -1,16 +1,28 @@
 import { Logger } from './logger'
-type DependenciesConstructorParams<C, P> = {
+
+type DependenciesConstructorParams<C> = {
   config: C
-  payload: P
   logger: Logger
   invocationId: string
 }
 
-type DependenciesConfig = {
-  cache?: boolean
+type DependenciesFunctionConstructor<C, D> = (params: DependenciesConstructorParams<C>) => D
+type DependenciesConstructor<C, D> = DependenciesFunctionConstructor<C, D> | D
+
+class EventBasedDependency<D> {
+  public dependencies: Record<string, D>
+  public key: string
+
+  constructor(dependencies: Record<string, D>, key: string) {
+    this.dependencies = dependencies
+    this.key = key
+  }
 }
 
-type DependenciesFunctionConstructor<C, P, D> = (params: DependenciesConstructorParams<C, P>) => D
-type DependenciesConstructor<C, P, D> = DependenciesFunctionConstructor<C, P, D> | D
+const eventBasedDependency = <D>(dependencies: Record<string, D>, key: string): D => {
+  const dependency = new EventBasedDependency<D>(dependencies, key)
+  return (dependency as unknown) as D
+}
 
-export type { DependenciesConstructor, DependenciesConfig }
+export type { DependenciesConstructor }
+export { eventBasedDependency, EventBasedDependency }

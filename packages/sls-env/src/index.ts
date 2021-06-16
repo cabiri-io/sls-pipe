@@ -1,5 +1,7 @@
+import _get from 'lodash.get'
 import { Logger, LoggerConstructor, createLogger, createMutableLogger, defaultLogger } from './logger'
 import { HandlerPayload, PayloadConstructor, remapFunctionArgumentsToObject } from './payload'
+import { EventBasedDependencyError } from './error'
 import type { Handler } from './handler'
 import {
   EnvironmentConfig,
@@ -12,7 +14,7 @@ import type { InvocationContext } from './invocation-context'
 import { ConfigConstructor, resolveConfig } from './config'
 import { ErrorHandler, ErrorParams, defaultErrorHandler } from './error-handler'
 import { SuccessHandler, SuccessParams } from './success-handler'
-import { DependenciesConfig, DependenciesConstructor } from './dependencies'
+import { DependenciesConstructor, EventBasedDependency, eventBasedDependency } from './dependencies'
 import type {
   AppConstructor,
   AppParams,
@@ -31,10 +33,16 @@ import type {
  * @template R - a result that application will return
  *
  */
-type SlsEnvironment<H extends Handler<any, any, any>, C, D, P = HandlerPayload<H>, R = ReturnType<H>> = {
+type SlsEnvironment<
+  H extends Handler<any, any, any>,
+  C,
+  D extends Record<string, any>,
+  P = HandlerPayload<H>,
+  R = ReturnType<H>
+> = {
   errorHandler: (handler: ErrorHandler<ReturnType<H>>) => SlsEnvironment<H, C, D, P, R>
   successHandler: (handler: SuccessHandler<R, ReturnType<H>>) => SlsEnvironment<H, C, D, P, R>
-  global: (dependencies: DependenciesConstructor<C, P, D>, config?: DependenciesConfig) => SlsEnvironment<H, C, D, P, R>
+  global: (dependencies: DependenciesConstructor<C, D>) => SlsEnvironment<H, C, D, P, R>
   logger: (logger: LoggerConstructor) => SlsEnvironment<H, C, D, P, R>
   config: (config: ConfigConstructor<C>) => SlsEnvironment<H, C, D, P, R>
   payload: (payloadConstructor: PayloadConstructor<H, P>) => SlsEnvironment<H, C, D, P, R>
@@ -61,8 +69,7 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
   // ------------------------------------
   // init defaults
   // ------------------------------------
-  let dependencies: DependenciesConstructor<C, P, D> = ({} as unknown) as DependenciesConstructor<C, P, D>
-  let dependenciesConfig: DependenciesConfig = {}
+  let dependencies: DependenciesConstructor<C, D> = ({} as unknown) as DependenciesConstructor<C, D>
   let payloadConstructor: PayloadConstructor<H, P> = remapFunctionArgumentsToObject
   let applicationLoggerConstructor: LoggerConstructor = defaultLogger
   let config: ConfigConstructor<C> | undefined | null
@@ -149,10 +156,17 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
      *    module2: createModule2(config, logger)
      *  }
      * })
+     *
+     * @example
+     * global({
+     *  module: eventBasedDependency({
+     *    'key1': createModule1(config.moduleConfig1),
+     *    'key2': createModule2(config.moduleConfig2)
+     *  }, 'path.to.payload.property')
+     * })
      */
-    global(constructor, config) {
+    global(constructor) {
       dependencies = constructor
-      dependenciesConfig = config || {}
       return this
     },
     /**
@@ -246,40 +260,65 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
             logger.trace({ config }, 'resolved configuration')
             return { logger, config, invocationId }
           })
-          // create payload
-          .then(({ logger, config, invocationId }) => {
-            logger.debug('about to create payload')
-            return Promise.resolve(payloadConstructor(event, context, { logger, invocationId })).then(payload => ({
-              config,
-              payload,
-              logger,
-              invocationId
-            }))
-          })
-          .then(({ logger, config, payload, invocationId }) => {
-            // we use trace here because dependencies could have sensitive values
-            logger.trace({ payload }, 'created payload')
-            return { logger, config, payload, invocationId }
-          })
           // resolve dependencies
-          .then(({ logger, config, payload, invocationId }) => {
+          .then(({ logger, config, invocationId }) => {
             logger.trace('about to resolve dependencies')
-            if (!applicationDependencies || dependenciesConfig.cache === false) {
+            if (!applicationDependencies) {
               logger.info('creating dependencies')
               if (typeof dependencies === 'function' && dependencies instanceof Function) {
-                applicationDependencies = dependencies({ config, payload, logger, invocationId })
+                applicationDependencies = dependencies({ config, logger, invocationId })
               } else {
                 logger.trace('about to resolve dependencies')
                 applicationDependencies = dependencies
               }
             }
 
-            return { logger, config, payload, dependencies: applicationDependencies, invocationId }
+            return { logger, config, dependencies: applicationDependencies, invocationId }
           })
-          .then(({ logger, config, payload, dependencies, invocationId }) => {
+          .then(({ logger, config, dependencies, invocationId }) => {
             // we use trace here because dependencies could have sensitive values
             logger.trace({ dependencies }, 'resolved dependencies')
-            return { logger, config, payload, dependencies, invocationId }
+            return { logger, config, dependencies, invocationId }
+          })
+          // create payload
+          .then(({ logger, config, dependencies, invocationId }) => {
+            logger.debug('about to create payload')
+            return Promise.resolve(payloadConstructor(event, context, { logger, invocationId })).then(payload => ({
+              payload,
+              dependencies,
+              config,
+              logger,
+              invocationId
+            }))
+          })
+          .then(({ logger, config, dependencies, payload, invocationId }) => {
+            // we use trace here because dependencies could have sensitive values
+            logger.trace({ payload }, 'created payload')
+            return { logger, config, dependencies, payload, invocationId }
+          })
+          // override event based dependencies
+          .then(({ logger, config, dependencies: _dependencies, payload, invocationId }) => {
+            logger.trace('about to resolve event based dependencies')
+            // need to shallow clone to ensure reference to cached applicationDependencies is not updated
+            const dependencies = { ..._dependencies }
+            Object.entries(applicationDependencies).forEach(([dependencyName, dependency]) => {
+              if (dependency instanceof EventBasedDependency) {
+                const key = _get(payload, dependency.key)
+                if (!key || !dependency.dependencies[key]) {
+                  logger.error(`could not extract event based dependency for ${dependencyName} with key ${key}`)
+                  throw new EventBasedDependencyError(`No event based dependency '${key}' found in '${dependencyName}'`)
+                } else {
+                  logger.info(`replacing '${dependencyName}' dependency with event based dependency from key '${key}'`)
+                  // @ts-expect-error
+                  dependencies[dependencyName] = dependency.dependencies[key]
+                }
+              }
+            })
+            return { logger, config, dependencies, payload, invocationId }
+          })
+          .then(({ logger, config, dependencies, payload, invocationId }) => {
+            logger.trace('resolved event based dependencies')
+            return { logger, config, dependencies, payload, invocationId }
           })
           // invoke application
           .then(({ logger, config, dependencies, payload, invocationId }) => {
@@ -335,4 +374,4 @@ export type {
   AppPayloadParams,
   AppConstructor as Application
 }
-export { environment, defaultLogger }
+export { environment, eventBasedDependency, defaultLogger }

@@ -17,9 +17,11 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@types/pino": "^6.3.5"
+    "@types/pino": "^6.3.5",
+    "lodash.get": "^4.4.2"
   },
   "devDependencies": {
+    "@types/lodash.get": "^4.4.6",
     "pino": "^6.11.0"
   }
 }
