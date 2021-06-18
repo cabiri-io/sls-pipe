@@ -1,4 +1,3 @@
-import _get from 'lodash.get'
 import { Logger, LoggerConstructor, createLogger, createMutableLogger, defaultLogger } from './logger'
 import { HandlerPayload, PayloadConstructor, remapFunctionArgumentsToObject } from './payload'
 import { EventBasedDependencyError } from './error'
@@ -14,7 +13,7 @@ import type { InvocationContext } from './invocation-context'
 import { ConfigConstructor, resolveConfig } from './config'
 import { ErrorHandler, ErrorParams, defaultErrorHandler } from './error-handler'
 import { SuccessHandler, SuccessParams } from './success-handler'
-import { DependenciesConstructor, EventBasedDependency, eventBasedDependency } from './dependencies'
+import { DependenciesConstructor, EventBasedDependency, createEventBasedDependency } from './dependencies'
 import type {
   AppConstructor,
   AppParams,
@@ -42,7 +41,7 @@ type SlsEnvironment<
 > = {
   errorHandler: (handler: ErrorHandler<ReturnType<H>>) => SlsEnvironment<H, C, D, P, R>
   successHandler: (handler: SuccessHandler<R, ReturnType<H>>) => SlsEnvironment<H, C, D, P, R>
-  global: (dependencies: DependenciesConstructor<C, D>) => SlsEnvironment<H, C, D, P, R>
+  global: (dependencies: DependenciesConstructor<C, D, H, P>) => SlsEnvironment<H, C, D, P, R>
   logger: (logger: LoggerConstructor) => SlsEnvironment<H, C, D, P, R>
   config: (config: ConfigConstructor<C>) => SlsEnvironment<H, C, D, P, R>
   payload: (payloadConstructor: PayloadConstructor<H, P>) => SlsEnvironment<H, C, D, P, R>
@@ -69,7 +68,7 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
   // ------------------------------------
   // init defaults
   // ------------------------------------
-  let dependencies: DependenciesConstructor<C, D> = ({} as unknown) as DependenciesConstructor<C, D>
+  let dependencies: DependenciesConstructor<C, D, H, P> = ({} as unknown) as DependenciesConstructor<C, D, H, P>
   let payloadConstructor: PayloadConstructor<H, P> = remapFunctionArgumentsToObject
   let applicationLoggerConstructor: LoggerConstructor = defaultLogger
   let config: ConfigConstructor<C> | undefined | null
@@ -266,7 +265,12 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
             if (!applicationDependencies) {
               logger.info('creating dependencies')
               if (typeof dependencies === 'function' && dependencies instanceof Function) {
-                applicationDependencies = dependencies({ config, logger, invocationId })
+                applicationDependencies = dependencies({
+                  config,
+                  logger,
+                  invocationId,
+                  createEventBasedDependency
+                })
               } else {
                 logger.trace('about to resolve dependencies')
                 applicationDependencies = dependencies
@@ -297,24 +301,34 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
             return { logger, config, dependencies, payload, invocationId }
           })
           // override event based dependencies
-          .then(({ logger, config, dependencies: _dependencies, payload, invocationId }) => {
+          .then(({ logger, config, dependencies, payload, invocationId }) => {
             logger.trace('about to resolve event based dependencies')
-            // need to shallow clone to ensure reference to cached applicationDependencies is not updated
-            const dependencies = { ..._dependencies }
-            Object.entries(applicationDependencies).forEach(([dependencyName, dependency]) => {
-              if (dependency instanceof EventBasedDependency) {
-                const key = _get(payload, dependency.key)
-                if (!key || !dependency.dependencies[key]) {
-                  logger.error(`could not extract event based dependency for ${dependencyName} with key ${key}`)
-                  throw new EventBasedDependencyError(`No event based dependency '${key}' found in '${dependencyName}'`)
-                } else {
-                  logger.info(`replacing '${dependencyName}' dependency with event based dependency from key '${key}'`)
-                  // @ts-expect-error
-                  dependencies[dependencyName] = dependency.dependencies[key]
+
+            const hasEventBasedDependencies = Object.values(dependencies).some(d => d instanceof EventBasedDependency)
+            if (!hasEventBasedDependencies) {
+              return { logger, config, dependencies, payload, invocationId }
+            }
+
+            const updatedDependencies = Object.entries(applicationDependencies).reduce(
+              (acc, [dependencyName, dependency]) => {
+                if (dependency instanceof EventBasedDependency) {
+                  const key = dependency.keyFunc({ event, payload })
+                  if (!key || !dependency.dependencies[key]) {
+                    logger.error(`could not extract event based dependency for ${dependencyName} with key ${key}`)
+                    throw new EventBasedDependencyError(
+                      `No event based dependency '${key}' found in '${dependencyName}'`
+                    )
+                  } else {
+                    logger.info(`replacing '${dependencyName}' with event based dependency from key '${key}'`)
+                    // @ts-expect-error
+                    acc[dependencyName] = dependency.dependencies[key]
+                  }
                 }
-              }
-            })
-            return { logger, config, dependencies, payload, invocationId }
+                return acc
+              },
+              { ...dependencies }
+            )
+            return { logger, config, dependencies: updatedDependencies, payload, invocationId }
           })
           .then(({ logger, config, dependencies, payload, invocationId }) => {
             logger.trace('resolved event based dependencies')
@@ -374,4 +388,4 @@ export type {
   AppPayloadParams,
   AppConstructor as Application
 }
-export { environment, eventBasedDependency, defaultLogger }
+export { environment, createEventBasedDependency, defaultLogger }
