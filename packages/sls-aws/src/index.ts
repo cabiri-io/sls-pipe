@@ -1,6 +1,4 @@
-export * from './s3'
-export * from './sns'
-export * from './sqs'
-export * from './eventbridge'
+export { snsMessage, snsMessages } from './sns'
+export { sqsMessage, sqsMessages } from './sqs'
 export * from './api-gateway'
 export * from './cognito'
