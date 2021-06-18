@@ -312,14 +312,12 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
             const updatedDependencies = Object.entries(applicationDependencies).reduce(
               (acc, [dependencyName, dependency]) => {
                 if (dependency instanceof EventBasedDependency) {
-                  const key = dependency.keyFunc({ event, payload })
-                  if (!key || !dependency.dependencies[key]) {
-                    logger.error(`could not extract event based dependency for ${dependencyName} with key ${key}`)
-                    throw new EventBasedDependencyError(
-                      `No event based dependency '${key}' found in '${dependencyName}'`
-                    )
+                  const eventDependency = dependency.get({ event, payload, dependencies: dependency.dependencies })
+                  if (!eventDependency) {
+                    logger.error(`could not extract event based dependency for ${dependencyName}`)
+                    throw new EventBasedDependencyError(`No event based dependency found for '${dependencyName}'`)
                   } else {
-                    logger.info(`replacing '${dependencyName}' with event based dependency from key '${key}'`)
+                    logger.info(`replacing '${dependencyName}' with event based dependency`)
                     // @ts-expect-error
                     acc[dependencyName] = dependency.dependencies[key]
                   }
@@ -388,4 +386,4 @@ export type {
   AppPayloadParams,
   AppConstructor as Application
 }
-export { environment, createEventBasedDependency, defaultLogger }
+export { environment, defaultLogger }
