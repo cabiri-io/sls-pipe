@@ -161,7 +161,7 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
      *  module: eventBasedDependency({
      *    'key1': createModule1(config.moduleConfig1),
      *    'key2': createModule2(config.moduleConfig2)
-     *  }, 'path.to.payload.property')
+     *  }, ({ dependencies, payload }) => dependencies[payload.key])
      * })
      */
     global(constructor) {
@@ -319,7 +319,7 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
                   } else {
                     logger.info(`replacing '${dependencyName}' with event based dependency`)
                     // @ts-expect-error
-                    acc[dependencyName] = dependency.dependencies[key]
+                    acc[dependencyName] = eventDependency
                   }
                 }
                 return acc
