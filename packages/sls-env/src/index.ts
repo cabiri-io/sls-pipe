@@ -317,7 +317,7 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
                     logger.error(`could not extract event based dependency for ${dependencyName}`)
                     throw new EventBasedDependencyError(`No event based dependency found for '${dependencyName}'`)
                   } else {
-                    logger.info(`replacing '${dependencyName}' with event based dependency`)
+                    logger.debug(`replacing '${dependencyName}' with event based dependency`)
                     // @ts-expect-error
                     acc[dependencyName] = eventDependency
                   }

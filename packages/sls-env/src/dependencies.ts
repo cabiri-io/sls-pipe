@@ -36,7 +36,7 @@ class EventBasedDependency<E, P, D> {
   }
 }
 
-const createEventBasedDependency = <H extends Handler<any, any, any>, P, D>(
+const createEventBasedDependency = <D, H extends Handler<any, any, any>, P>(
   dependencies: Record<string, D>,
   get: EventBasedDependencyGetter<Parameters<H>[0], P, D>
 ): D => {
