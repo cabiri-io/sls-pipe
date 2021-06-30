@@ -68,7 +68,7 @@ describe('serverless environment', () => {
       }
       type Config = { hello: string }
 
-      const buildMessages: { [key: string]: BuildMessage } = {
+      const buildMessages: Record<string, BuildMessage> = {
         client1: (_m, _n) => `Using client1!`,
         client2: (_m, _n) => `Using client2!`
       }
@@ -84,7 +84,7 @@ describe('serverless environment', () => {
       >()
         .config({ hello: 'config' })
         .global(({ createEventBasedDependency }) => ({
-          buildMessage: createEventBasedDependency<BuildMessage>(
+          buildMessage: createEventBasedDependency(
             buildMessages,
             ({ event, dependencies }) => dependencies[event.message]
           )
