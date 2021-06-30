@@ -66,30 +66,27 @@ describe('serverless environment', () => {
       type BuildMessageDependencies = {
         buildMessage: BuildMessage
       }
-      type Config = { hello: string }
 
       const buildMessages: Record<string, BuildMessage> = {
         client1: (_m, _n) => `Using client1!`,
         client2: (_m, _n) => `Using client2!`
       }
 
-      const app = ({ payload: { event, context }, dependencies: { buildMessage } }) =>
-        buildMessage(event.message, context.name)
-
       const handler = environment<
         Handler<MessageEvent, NameContext, string>,
-        Config,
+        any,
         BuildMessageDependencies,
         EventPayload
       >()
-        .config({ hello: 'config' })
         .global(({ createEventBasedDependency }) => ({
           buildMessage: createEventBasedDependency(
             buildMessages,
             ({ event, dependencies }) => dependencies[event.message]
           )
         }))
-        .app(app)
+        .app(({ payload: { event, context }, dependencies: { buildMessage } }) =>
+          buildMessage(event.message, context.name)
+        )
         .successHandler(({ result }) => result as string).start
 
       const response1 = await handler({ message: 'client1' }, { name: 'world' })
