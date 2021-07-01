@@ -1,5 +1,5 @@
 import { EventBasedDependencyError } from '../error/index'
-import { Handler, environment } from '..'
+import { Handler, environment, eventBasedDependency } from '..'
 
 describe('serverless environment', () => {
   type MessageEvent = { message: string }
@@ -61,6 +61,45 @@ describe('serverless environment', () => {
         .then(result => expect(result).toBe('hello world of config!'))
     })
 
+    it('changes event based dependencies based on the event', async () => {
+      type BuildMessage = (message: string, name: string) => string
+      type BuildMessageDependencies = {
+        buildMessage: BuildMessage
+      }
+
+      const buildMessages: Record<string, BuildMessage> = {
+        client1: (_m, _n) => `Using client1!`,
+        client2: (_m, _n) => `Using client2!`
+      }
+
+      const handler = environment<
+        Handler<MessageEvent, NameContext, string>,
+        any,
+        BuildMessageDependencies,
+        EventPayload
+      >()
+        .global({
+          buildMessage: eventBasedDependency<BuildMessage, EventPayload, MessageEvent>(
+            buildMessages,
+            ({ event, dependencies }) => dependencies[event.message]
+          )
+        })
+        .app(({ payload: { event, context }, dependencies: { buildMessage } }) =>
+          buildMessage(event.message, context.name)
+        )
+        .successHandler(({ result }) => result as string).start
+
+      const response1 = await handler({ message: 'client1' }, { name: 'world' })
+      expect(response1).toBe('Using client1!')
+
+      const response2 = await handler({ message: 'client2' }, { name: 'world' })
+      expect(response2).toBe('Using client2!')
+
+      await expect(handler({ message: 'client3' }, { name: 'world' })).rejects.toThrow(
+        new EventBasedDependencyError("No event based dependency found for 'buildMessage'")
+      )
+    })
+
     it('changes event based dependencies based on the payload', async () => {
       type BuildMessage = (message: string, name: string) => string
       type BuildMessageDependencies = {
@@ -78,26 +117,48 @@ describe('serverless environment', () => {
         BuildMessageDependencies,
         EventPayload
       >()
-        .global(({ createEventBasedDependency }) => ({
-          buildMessage: createEventBasedDependency(
+        .global({
+          buildMessage: eventBasedDependency<BuildMessage, EventPayload, MessageEvent>(
             buildMessages,
-            ({ event, dependencies }) => dependencies[event.message]
+            ({ payload, dependencies }) => dependencies[payload.context.name]
           )
-        }))
+        })
         .app(({ payload: { event, context }, dependencies: { buildMessage } }) =>
           buildMessage(event.message, context.name)
         )
         .successHandler(({ result }) => result as string).start
 
-      const response1 = await handler({ message: 'client1' }, { name: 'world' })
+      const response1 = await handler({ message: 'hello' }, { name: 'client1' })
       expect(response1).toBe('Using client1!')
 
-      const response2 = await handler({ message: 'client2' }, { name: 'world' })
+      const response2 = await handler({ message: 'hello' }, { name: 'client2' })
       expect(response2).toBe('Using client2!')
 
       await expect(handler({ message: 'client3' }, { name: 'world' })).rejects.toThrow(
         new EventBasedDependencyError("No event based dependency found for 'buildMessage'")
       )
+    })
+
+    it('changes event based dependencies based on the payload', async () => {
+      type BuildMessage = (message: string, name: string) => string
+      type BuildMessageDependencies = {
+        buildMessage: BuildMessage
+      }
+
+      const handler = environment<Handler<MessageEvent, NameContext, string>, any, BuildMessageDependencies, null>()
+        .config(() => ({ name: 'no client' }))
+        .global(({ config }) => ({
+          buildMessage: eventBasedDependency<BuildMessage>(
+            { client1: (_m, _n) => `Using client1!` },
+            ({ dependencies }) => dependencies[config.name],
+            { ignoreMissing: true }
+          )
+        }))
+        .app(({ dependencies: { buildMessage } }) => buildMessage?.('', '') || 'no buildMessage function')
+        .successHandler(({ result }) => result as string).start
+
+      const response2 = await handler({ message: 'hello' }, { name: 'client2' })
+      expect(response2).toBe('no buildMessage function')
     })
   })
 })

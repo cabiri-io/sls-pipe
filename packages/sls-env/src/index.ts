@@ -13,7 +13,7 @@ import type { InvocationContext } from './invocation-context'
 import { ConfigConstructor, resolveConfig } from './config'
 import { ErrorHandler, ErrorParams, defaultErrorHandler } from './error-handler'
 import { SuccessHandler, SuccessParams } from './success-handler'
-import { DependenciesConstructor, EventBasedDependency, createEventBasedDependency } from './dependencies'
+import { DependenciesConstructor, EventBasedDependencyConstruct, eventBasedDependency } from './dependencies'
 import type {
   AppConstructor,
   AppParams,
@@ -41,7 +41,7 @@ type SlsEnvironment<
 > = {
   errorHandler: (handler: ErrorHandler<ReturnType<H>>) => SlsEnvironment<H, C, D, P, R>
   successHandler: (handler: SuccessHandler<R, ReturnType<H>>) => SlsEnvironment<H, C, D, P, R>
-  global: (dependencies: DependenciesConstructor<C, D, H, P>) => SlsEnvironment<H, C, D, P, R>
+  global: (dependencies: DependenciesConstructor<C, D>) => SlsEnvironment<H, C, D, P, R>
   logger: (logger: LoggerConstructor) => SlsEnvironment<H, C, D, P, R>
   config: (config: ConfigConstructor<C>) => SlsEnvironment<H, C, D, P, R>
   payload: (payloadConstructor: PayloadConstructor<H, P>) => SlsEnvironment<H, C, D, P, R>
@@ -68,7 +68,7 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
   // ------------------------------------
   // init defaults
   // ------------------------------------
-  let dependencies: DependenciesConstructor<C, D, H, P> = ({} as unknown) as DependenciesConstructor<C, D, H, P>
+  let dependencies: DependenciesConstructor<C, D> = ({} as unknown) as DependenciesConstructor<C, D>
   let payloadConstructor: PayloadConstructor<H, P> = remapFunctionArgumentsToObject
   let applicationLoggerConstructor: LoggerConstructor = defaultLogger
   let config: ConfigConstructor<C> | undefined | null
@@ -161,7 +161,9 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
      *  module: eventBasedDependency({
      *    'key1': createModule1(config.moduleConfig1),
      *    'key2': createModule2(config.moduleConfig2)
-     *  }, ({ dependencies, payload }) => dependencies[payload.key])
+     *  },
+     *  ({ dependencies, payload }) => dependencies[payload.key],
+     *  { ignoreMissing: true })
      * })
      */
     global(constructor) {
@@ -265,12 +267,7 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
             if (!applicationDependencies) {
               logger.info('creating dependencies')
               if (typeof dependencies === 'function' && dependencies instanceof Function) {
-                applicationDependencies = dependencies({
-                  config,
-                  logger,
-                  invocationId,
-                  createEventBasedDependency
-                })
+                applicationDependencies = dependencies({ config, logger, invocationId })
               } else {
                 logger.trace('about to resolve dependencies')
                 applicationDependencies = dependencies
@@ -304,18 +301,26 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
           .then(({ logger, config, dependencies, payload, invocationId }) => {
             logger.trace('about to resolve event based dependencies')
 
-            const hasEventBasedDependencies = Object.values(dependencies).some(d => d instanceof EventBasedDependency)
+            const hasEventBasedDependencies = Object.values(dependencies).some(d => d?.type === 'EventBasedDependency')
             if (!hasEventBasedDependencies) {
               return { logger, config, dependencies, payload, invocationId }
             }
 
             const updatedDependencies = Object.entries(applicationDependencies).reduce(
               (acc, [dependencyName, dependency]) => {
-                if (dependency instanceof EventBasedDependency) {
-                  const eventDependency = dependency.get({ event, payload, dependencies: dependency.dependencies })
+                if (dependency?.type === 'EventBasedDependency') {
+                  const eventDependency = (dependency as EventBasedDependencyConstruct<P, Parameters<H>[0]>).get(
+                    payload,
+                    event
+                  )
                   if (!eventDependency) {
                     logger.error(`could not extract event based dependency for ${dependencyName}`)
-                    throw new EventBasedDependencyError(`No event based dependency found for '${dependencyName}'`)
+                    if (dependency.config.ignoreMissing) {
+                      // @ts-expect-error
+                      acc[dependencyName] = null
+                    } else {
+                      throw new EventBasedDependencyError(`No event based dependency found for '${dependencyName}'`)
+                    }
                   } else {
                     logger.debug(`replacing '${dependencyName}' with event based dependency`)
                     // @ts-expect-error
@@ -386,4 +391,4 @@ export type {
   AppPayloadParams,
   AppConstructor as Application
 }
-export { environment, defaultLogger }
+export { environment, eventBasedDependency, defaultLogger }
