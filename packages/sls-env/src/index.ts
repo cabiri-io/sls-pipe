@@ -314,7 +314,7 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
                     event
                   )
                   if (!eventDependency) {
-                    logger.error(`could not extract event based dependency for ${dependencyName}`)
+                    logger.warn(`could not extract event based dependency for ${dependencyName}`)
                     if (dependency.config.ignoreMissing) {
                       // @ts-expect-error
                       acc[dependencyName] = null
