@@ -265,7 +265,7 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
           .then(({ logger, config, invocationId }) => {
             logger.trace('about to resolve dependencies')
             if (!applicationDependencies) {
-              logger.info('creating dependencies')
+              logger.debug('creating dependencies')
               if (typeof dependencies === 'function' && dependencies instanceof Function) {
                 applicationDependencies = dependencies({ config, logger, invocationId })
               } else {
@@ -339,7 +339,7 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
           })
           // invoke application
           .then(({ logger, config, dependencies, payload, invocationId }) => {
-            logger.info('about to invoke application')
+            logger.debug('about to invoke application')
             return Promise.resolve(
               appConstructor({ logger, config, dependencies, payload, context: { invocationId } })
             ).then(result => ({
