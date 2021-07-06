@@ -13,7 +13,12 @@ import type { InvocationContext } from './invocation-context'
 import { ConfigConstructor, resolveConfig } from './config'
 import { ErrorHandler, ErrorParams, defaultErrorHandler } from './error-handler'
 import { SuccessHandler, SuccessParams } from './success-handler'
-import { DependenciesConstructor, EventBasedDependencyConstruct, eventBasedDependency } from './dependencies'
+import {
+  DependenciesConstructor,
+  EventBasedDependencyConstruct,
+  eventBasedDependency,
+  resolveDependencies
+} from './dependencies'
 import type {
   AppConstructor,
   AppParams,
@@ -264,17 +269,14 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
           // resolve dependencies
           .then(({ logger, config, invocationId }) => {
             logger.trace('about to resolve dependencies')
-            if (!applicationDependencies) {
-              logger.debug('creating dependencies')
-              if (typeof dependencies === 'function' && dependencies instanceof Function) {
-                applicationDependencies = dependencies({ config, logger, invocationId })
-              } else {
-                logger.trace('about to resolve dependencies')
-                applicationDependencies = dependencies
-              }
+            if (applicationDependencies) {
+              return { logger, config, dependencies: applicationDependencies, invocationId }
             }
-
-            return { logger, config, dependencies: applicationDependencies, invocationId }
+            logger.debug('creating dependencies')
+            return resolveDependencies(dependencies, config, logger, invocationId).then(resolvedDependencies => {
+              applicationDependencies = resolvedDependencies
+              return { logger, config, dependencies: applicationDependencies, invocationId }
+            })
           })
           .then(({ logger, config, dependencies, invocationId }) => {
             // we use trace here because dependencies could have sensitive values
@@ -301,35 +303,33 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
           .then(({ logger, config, dependencies, payload, invocationId }) => {
             logger.trace('about to resolve event based dependencies')
 
-            const hasEventBasedDependencies = Object.values(dependencies).some(d => d?.type === 'EventBasedDependency')
-            if (!hasEventBasedDependencies) {
-              return { logger, config, dependencies, payload, invocationId }
-            }
-
-            const updatedDependencies = Object.entries(applicationDependencies).reduce(
+            const updatedDependencies = Object.entries(dependencies).reduce(
               (acc, [dependencyName, dependency]) => {
                 if (dependency?.type === 'EventBasedDependency') {
                   const eventDependency = (dependency as EventBasedDependencyConstruct<P, Parameters<H>[0]>).get(
                     payload,
                     event
                   )
+                  // we need invocations and more details why it failed
                   if (!eventDependency) {
                     logger.warn(`could not extract event based dependency for ${dependencyName}`)
+                    // I'm not sure if that make sense, that would make things unpredictible?
+                    // and also we would need to mark as optional
+                    // I think I would prefer this to throw an error
                     if (dependency.config.ignoreMissing) {
-                      // @ts-expect-error
-                      acc[dependencyName] = null
+                      logger.debug(`ignoring dependency '${dependencyName}' as it is being marked as ignore missing`)
+                      return { ...acc, [dependencyName]: null }
                     } else {
                       throw new EventBasedDependencyError(`No event based dependency found for '${dependencyName}'`)
                     }
                   } else {
                     logger.debug(`replacing '${dependencyName}' with event based dependency`)
-                    // @ts-expect-error
-                    acc[dependencyName] = eventDependency
+                    return { ...acc, [dependencyName]: eventDependency }
                   }
                 }
                 return acc
               },
-              { ...dependencies }
+              dependencies // we use copy them in the reduce no need to copy here
             )
             return { logger, config, dependencies: updatedDependencies, payload, invocationId }
           })

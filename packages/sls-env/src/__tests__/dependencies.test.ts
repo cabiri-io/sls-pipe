@@ -23,6 +23,22 @@ describe('serverless environment', () => {
         .then(result => expect(result).toBe('hello world!'))
     })
 
+    it('supports adding promise object with named dependencies', async () => {
+      type BuildMessage = (message: string, name: string) => string
+      type BuildMessageDependencies = {
+        buildMessage: BuildMessage
+      }
+
+      return environment<Handler<MessageEvent, NameContext, string>, never, BuildMessageDependencies, EventPayload>()
+        .global(Promise.resolve({ buildMessage: (message: string, name: string) => `${message} ${name}!` }))
+        .app(({ payload: { event, context }, dependencies: { buildMessage } }) =>
+          buildMessage(event.message, context.name)
+        )
+        .successHandler(({ result }) => result as string)
+        .start({ message: 'hello' }, { name: 'world' })
+        .then(result => expect(result).toBe('hello world!'))
+    })
+
     it('supports adding function which returns named dependencies', async () => {
       type BuildMessage = (message: string, name: string) => string
       type BuildMessageDependencies = {
@@ -61,7 +77,27 @@ describe('serverless environment', () => {
         .then(result => expect(result).toBe('hello world of config!'))
     })
 
-    it('changes event based dependencies based on the event', async () => {
+    it('builds list of dependency in an async function constructor', async () => {
+      type BuildMessage = (message: string, name: string) => string
+      type BuildMessageDependencies = {
+        buildMessage: BuildMessage
+      }
+      type Config = { hello: string }
+
+      return environment<Handler<MessageEvent, NameContext, string>, Config, BuildMessageDependencies, EventPayload>()
+        .config({ hello: 'config' })
+        .global(async ({ config }) => ({
+          buildMessage: (message: string, name: string) => `${message} ${name} of ${config.hello}!`
+        }))
+        .app(({ payload: { event, context }, dependencies: { buildMessage } }) =>
+          buildMessage(event.message, context.name)
+        )
+        .successHandler(({ result }) => result as string)
+        .start({ message: 'hello' }, { name: 'world' })
+        .then(result => expect(result).toBe('hello world of config!'))
+    })
+
+    it('uses dependency based on the event property', async () => {
       type BuildMessage = (message: string, name: string) => string
       type BuildMessageDependencies = {
         buildMessage: BuildMessage

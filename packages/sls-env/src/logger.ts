@@ -43,12 +43,14 @@ const isFunction = (v: CreateLogger | Logger): v is CreateLogger => typeof v ===
 
 type LoggerConstructor = Logger | CreateLogger
 
-const createLogger = (level: string) => (loggerConstrutor: LoggerConstructor): Logger => {
-  if (isFunction(loggerConstrutor)) {
-    return loggerConstrutor({ level })
+const createLogger =
+  (level: string) =>
+  (loggerConstrutor: LoggerConstructor): Logger => {
+    if (isFunction(loggerConstrutor)) {
+      return loggerConstrutor({ level })
+    }
+    return loggerConstrutor
   }
-  return loggerConstrutor
-}
 
 const createMutableLogger = (logger: Logger): Logger => {
   let wrapperedLogger = logger
@@ -68,7 +70,7 @@ const createMutableLogger = (logger: Logger): Logger => {
     }
   }
 
-  return new Proxy<Logger>(({} as unknown) as Logger, handler)
+  return new Proxy<Logger>({} as unknown as Logger, handler)
 }
 
 export type { Logger, LoggerConstructor }
