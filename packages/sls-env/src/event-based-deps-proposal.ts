@@ -183,3 +183,14 @@ type ST = TypeFromProperty<Payload, ['body']>
 type TypeFromProperty<T, P extends any[]> = T[P[0]]
 
 type ST1 = TypeFromProperty<TypeFromProperty<Payload, ['body']>, ['value']>
+
+type SLSDependencies = {
+  client: Client
+  eventBasedDepenency: EventDependency<Client, Payload>
+}
+
+type AppDependencyConverter<T> = {
+  [k in keyof T]: T[k] extends EventDependency<infer A, infer B, infer C> ? A : T[k]
+}
+
+type AppDependency = AppDependencyConverter<SLSDependencies>
