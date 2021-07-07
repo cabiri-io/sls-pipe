@@ -340,6 +340,7 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
           // invoke application
           .then(({ logger, config, dependencies, payload, invocationId }) => {
             logger.debug('about to invoke application')
+            /// deps.client - OK
             return Promise.resolve(
               appConstructor({ logger, config, dependencies, payload, context: { invocationId } })
             ).then(result => ({

@@ -15,13 +15,6 @@ type Payload = {
   }
 }
 
-// limited strict payload definition
-type StrictPayload = {
-  body: {
-    value: 'a' | 'b'
-  }
-}
-
 type PathOf<T> = {
   // eslint-disable-next-line @typescript-eslint/ban-types
   [K in keyof T]: T[K] extends object ? K | `${K}.${PathOf<T[K]>}` | `${K}['${PathOf<T[K]>}']` : K
@@ -65,6 +58,7 @@ type ArrayPathOf2<T> = {
     : never
 }[keyof T]
 
+type VP2 = PathOf<Payload>
 type VS2 = ArrayPathOf2<Payload>
 
 type SimpleTypeFromProperty<T, P extends Array<any>> = T[P[0]]
@@ -75,6 +69,7 @@ type TypeFromProperties<T, P extends Array<any>> = {
 }[HasTail<P> extends true ? 0 : 1]
 
 type ST2 = TypeFromProperties<Payload, ['body', 'value']>
+type ST3 = TypeFromProperties<StrictPayload, ['body', 'value']>
 
 // where K is the all combintation of Paths
 // type EventDependency<D, P, K = PathOf<P>> = {
@@ -86,6 +81,33 @@ type EventDependency<D, P, K = ArrayPathOf2<P>> = {
   d: Record<string, D>
   k: K
 }
+
+/**
+ * D - dependency
+ * P - payload
+ * E - event
+ * C - context
+ */
+type NewEventDependency<D, P, E, C, K extends string = string> = {
+  type: 'EventBasedDependency'
+  dependencies: Record<K, D> // limit to string for time being
+  // use only function for time being ignore K
+  get: (p: P, e: E, c: C) => K
+}
+
+type Event = {
+  a: string
+}
+
+type Context = {
+  c: string
+}
+
+type EventA = NewEventDependency<Client, Payload, Event, Context, 'debs' | 'warehouse'>
+
+type AWSEventDependency<D, P, E> = NewEventDependency<D, P, E, AWSContext>
+
+type APIGatewayEventDepedency<D, P> = NewEventDependency<D, P, APIGatewayEvent, AWSContext, K>
 
 type SimpleDependency = {
   client: Client
@@ -124,8 +146,8 @@ const validDependencySubvalue: EventDependency<Client, Payload> = {
   d: {
     c: { doSomething() {} } // any string will work
   },
-  // k: 'body.value1' // this is failing because it has incorrect path - expected
-  k: ['body', 'value3', 'subvalue'] // this is failing because it has incorrect path - expected
+  // k: 'body.value1'
+  k: ['body', 'value3', 'subvalue'] // goes deep in the object tree structure
 }
 // eslint-disable-next-line no-console
 console.log(validDependencySubvalue)
@@ -136,13 +158,23 @@ const invalidDependencyArray: EventDependency<Client, Payload> = {
   },
   // k: 'body.value1' // this is failing because it has incorrect path - expected
   k: ['body', 'value4'] // this is failing because it has incorrect path - expected
+  // a function which works on the payload/context/event
+  // a path to payload instead of writing function each time
 }
 // eslint-disable-next-line no-console
 console.log(validDependencySubvalue)
 
+// limited strict payload definition
+type StrictPayload = {
+  body: {
+    value: 'a' | 'b'
+  }
+}
 const invalidEventDependency: EventDependency<Client, StrictPayload> = {
   d: {
-    c: { doSomething() {} } // this should show an error but doesn't
+    // only values that should be supported are 'a' or 'b'
+    c: { doSomething() {} }, // this is invalid because that value is not defined in StrictPayload
+    a: { doSomething() {} } // valid
   },
   k: ['body', 'value']
 }
@@ -161,28 +193,28 @@ console.log(property)
 
 */
 
-type ArrayPathOf<T> = {
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  [K in keyof T]: T[K] extends object ? [K] | [K, ArrayPathOf<T[K]>] : K
-}[keyof T]
+// type ArrayPathOf<T> = {
+//   // eslint-disable-next-line @typescript-eslint/ban-types
+//   [K in keyof T]: T[K] extends object ? [K] | [K, ArrayPathOf<T[K]>] : K
+// }[keyof T]
 
 type Head<T extends Array<any>> = T extends [infer I, ...infer L] ? I : never
 type Tail<T extends Array<any>> = T extends [infer I, ...infer L] ? L : never
 type HasTail<T extends any[]> = T extends [] | [any] ? false : true
 
-// type TypeFromProperty<T, P> = {}
+// // type TypeFromProperty<T, P> = {}
 
-type BB = ArrayPathOf<Payload>
-// single property
+// type BB = ArrayPathOf<Payload>
+// // single property
 
-type TypeFromProperty<T, P extends any[]> = T[P[0]]
+// type TypeFromProperty<T, P extends any[]> = T[P[0]]
 
-type ST = TypeFromProperty<Payload, ['body']>
+// type ST = TypeFromProperty<Payload, ['body']>
 
-// from sub propertye
-type TypeFromProperty<T, P extends any[]> = T[P[0]]
+// // from sub propertye
+// type TypeFromProperty<T, P extends any[]> = T[P[0]]
 
-type ST1 = TypeFromProperty<TypeFromProperty<Payload, ['body']>, ['value']>
+// type ST1 = TypeFromProperty<TypeFromProperty<Payload, ['body']>, ['value']>
 
 type SLSDependencies = {
   client: Client

@@ -20,6 +20,7 @@ type EventBasedDependencyGetter<D, P, E> = (params: EventBasedDependencyGetterPa
 type EventBasedDependencyConstruct<P, E> = {
   type: 'EventBasedDependency'
   config: EventBasedDependencyConfig
+  // we need to have Payload/Event/Context
   get: (payload: P, event: E) => any
 }
 
