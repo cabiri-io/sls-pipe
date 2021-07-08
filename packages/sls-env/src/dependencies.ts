@@ -55,12 +55,11 @@ const resolveDependencies = async <D, C>(
 const eventBasedDependency = <D, P = any, E = any, C = any, K extends string = string>(
   dependencies: Record<K, D>,
   getKey: EventBasedDependencyGetKey<P, E, C, K>
-): EventBasedDependency<D, P, E, C> =>
-  ({
-    type: 'EventBasedDependency',
-    dependencies,
-    getKey: (payload: P, event: E, context: C) => getKey({ payload, event, context })
-  } as EventBasedDependency<D, P, E, C>)
+): EventBasedDependency<D, P, E, C> => ({
+  type: 'EventBasedDependency',
+  dependencies,
+  getKey: (payload: P, event: E, context: C) => getKey({ payload, event, context })
+})
 
 export { resolveDependencies, eventBasedDependency }
 export type { AppDependencyConverter, DependenciesConstructor, EventBasedDependency }
