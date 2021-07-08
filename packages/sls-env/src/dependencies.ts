@@ -29,7 +29,7 @@ type EventDependency<D, P = any, E = any, C = any, K extends string = string> = 
   getKey: (p: P, e: E, c: C) => K
 }
 
-type APIGatewayEventDependency<D, P, K extends string = string> = EventDependency<
+type APIGatewayEventDependency<D, P = any, K extends string = string> = EventDependency<
   D,
   P,
   APIGatewayProxyEventV2,

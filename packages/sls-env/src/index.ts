@@ -164,7 +164,7 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
      *    'key1': createModule1(config.moduleConfig1),
      *    'key2': createModule2(config.moduleConfig2)
      *  },
-     *  ({ dependencies, payload }) => dependencies[payload.key],
+     *  ({ payload }) => payload.key, // resolves to 'key1' | 'key2'
      * })
      */
     global(constructor) {
