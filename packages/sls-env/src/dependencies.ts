@@ -1,4 +1,5 @@
 import { Logger } from './logger'
+import { EventBasedDependencyError } from './error'
 
 type DependenciesConstructorParams<C> = {
   config: C
@@ -61,5 +62,30 @@ const eventBasedDependency = <D, P = any, E = any, C = any, K extends string = s
   getKey: (payload: P, event: E, context: C) => getKey({ payload, event, context })
 })
 
-export { resolveDependencies, eventBasedDependency }
+const resolveEventBasedDependencies = <D, P, E, C>(
+  dependencies: D,
+  logger: Logger,
+  payload: P,
+  event: E,
+  context: C
+): AppDependencyConverter<D> => {
+  const updatedDependencies = Object.entries(dependencies).reduce((acc, [dependencyName, dependency]) => {
+    if (dependency?.type === 'EventBasedDependency') {
+      const key = dependency.getKey(payload, event, context)
+      const eventDependency = dependency.dependencies[key]
+      if (!eventDependency) {
+        logger.warn(`could not extract event based dependency for ${dependencyName}`)
+        throw new EventBasedDependencyError(`No event based dependency found for '${dependencyName}'`)
+      } else {
+        logger.debug(`replacing '${dependencyName}' with event based dependency`)
+        return { ...acc, [dependencyName]: eventDependency }
+      }
+    }
+    return acc
+  }, dependencies as AppDependencyConverter<D>)
+
+  return updatedDependencies
+}
+
+export { resolveDependencies, resolveEventBasedDependencies, eventBasedDependency }
 export type { AppDependencyConverter, DependenciesConstructor, EventBasedDependency }

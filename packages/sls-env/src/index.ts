@@ -1,6 +1,5 @@
 import { Logger, LoggerConstructor, createLogger, createMutableLogger, defaultLogger } from './logger'
 import { HandlerPayload, PayloadConstructor, remapFunctionArgumentsToObject } from './payload'
-import { EventBasedDependencyError } from './error'
 import type { Handler } from './handler'
 import {
   EnvironmentConfig,
@@ -18,7 +17,8 @@ import {
   DependenciesConstructor,
   EventBasedDependency,
   eventBasedDependency,
-  resolveDependencies
+  resolveDependencies,
+  resolveEventBasedDependencies
 } from './dependencies'
 import type {
   AppConstructor,
@@ -296,21 +296,13 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
           // override event based dependencies
           .then(({ logger, config, dependencies, payload, invocationId }) => {
             logger.trace('about to resolve event based dependencies')
-
-            const updatedDependencies = Object.entries(dependencies).reduce((acc, [dependencyName, dependency]) => {
-              if (dependency?.type === 'EventBasedDependency') {
-                const key = dependency.getKey(payload, event, context)
-                const eventDependency = dependency.dependencies[key]
-                if (!eventDependency) {
-                  logger.warn(`could not extract event based dependency for ${dependencyName}`)
-                  throw new EventBasedDependencyError(`No event based dependency found for '${dependencyName}'`)
-                } else {
-                  logger.debug(`replacing '${dependencyName}' with event based dependency`)
-                  return { ...acc, [dependencyName]: eventDependency }
-                }
-              }
-              return acc
-            }, dependencies as AppDependencyConverter<D>)
+            const updatedDependencies = resolveEventBasedDependencies<D, P, Parameters<H>[0], Parameters<H>[1]>(
+              dependencies,
+              logger,
+              payload,
+              event,
+              context
+            )
             return { logger, config, dependencies: updatedDependencies, payload, invocationId }
           })
           .then(({ logger, config, dependencies, payload, invocationId }) => {
