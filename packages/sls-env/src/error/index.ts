@@ -1,2 +1,2 @@
-export { EventBasedDependencyError } from './event-based-dependency-error'
+export { EventDependencyError } from './event-dependency-error'
 export { PayloadDefinitionError } from './payload-definition-error'

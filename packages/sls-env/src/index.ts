@@ -13,12 +13,14 @@ import { ConfigConstructor, resolveConfig } from './config'
 import { ErrorHandler, ErrorParams, defaultErrorHandler } from './error-handler'
 import { SuccessHandler, SuccessParams } from './success-handler'
 import {
+  APIGatewayEventDependency,
   AppDependencyConverter,
   DependenciesConstructor,
-  EventBasedDependency,
-  eventBasedDependency,
+  EventDependency,
+  apiGatewayEventDependency,
+  eventDependency,
   resolveDependencies,
-  resolveEventBasedDependencies
+  resolveEventDependencies
 } from './dependencies'
 import type {
   AppConstructor,
@@ -158,7 +160,7 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
      *
      * @example
      * global({
-     *  module: eventBasedDependency({
+     *  module: eventDependency({
      *    'key1': createModule1(config.moduleConfig1),
      *    'key2': createModule2(config.moduleConfig2)
      *  },
@@ -296,7 +298,7 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
           // override event based dependencies
           .then(({ logger, config, dependencies, payload, invocationId }) => {
             logger.trace('about to resolve event based dependencies')
-            const updatedDependencies = resolveEventBasedDependencies<D, P, Parameters<H>[0], Parameters<H>[1]>(
+            const updatedDependencies = resolveEventDependencies<D, P, Parameters<H>[0], Parameters<H>[1]>(
               dependencies,
               logger,
               payload,
@@ -351,7 +353,7 @@ export type {
   Handler,
   SlsEnvironment,
   EnvironmentConfig,
-  EventBasedDependency,
+  EventDependency,
   Logger,
   InvocationIdConstructor,
   InvocationContextConstructor,
@@ -360,9 +362,10 @@ export type {
   SuccessParams,
   AppParams,
   ContextAppParams,
+  APIGatewayEventDependency,
   AppDependencyConverter,
   AppPayloadDependenciesParams,
   AppPayloadParams,
   AppConstructor as Application
 }
-export { environment, eventBasedDependency, defaultLogger }
+export { environment, eventDependency, apiGatewayEventDependency, defaultLogger }

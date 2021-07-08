@@ -1,5 +1,7 @@
+import { APIGatewayProxyEventV2, Context } from 'aws-lambda'
+
 import { Logger } from './logger'
-import { EventBasedDependencyError } from './error'
+import { EventDependencyError } from './error'
 
 type DependenciesConstructorParams<C> = {
   config: C
@@ -7,13 +9,13 @@ type DependenciesConstructorParams<C> = {
   invocationId: string
 }
 
-type EventBasedDependencyGetKeyParams<P, E, C> = {
+type EventDependencyGetKeyParams<P, E, C> = {
   event: E
   payload: P
   context: C
 }
 
-type EventBasedDependencyGetKey<P, E, C, K> = (params: EventBasedDependencyGetKeyParams<P, E, C>) => K
+type EventDependencyGetKey<P, E, C, K> = (params: EventDependencyGetKeyParams<P, E, C>) => K
 
 /**
  * D - dependency
@@ -21,14 +23,22 @@ type EventBasedDependencyGetKey<P, E, C, K> = (params: EventBasedDependencyGetKe
  * E - event
  * C - context
  */
-type EventBasedDependency<D, P = any, E = any, C = any, K extends string = string> = {
-  type: 'EventBasedDependency'
+type EventDependency<D, P = any, E = any, C = any, K extends string = string> = {
+  type: 'EventDependency'
   dependencies: Record<K, D>
   getKey: (p: P, e: E, c: C) => K
 }
 
+type APIGatewayEventDependency<D, P, K extends string = string> = EventDependency<
+  D,
+  P,
+  APIGatewayProxyEventV2,
+  Context,
+  K
+>
+
 type AppDependencyConverter<T> = {
-  [k in keyof T]: T[k] extends EventBasedDependency<infer D> ? D : T[k]
+  [k in keyof T]: T[k] extends EventDependency<infer D> ? D : T[k]
 }
 
 type DependenciesFunctionConstructor<C, D> = (params: DependenciesConstructorParams<C>) => D | Promise<D>
@@ -53,16 +63,25 @@ const resolveDependencies = async <D, C>(
   return dependencies
 }
 
-const eventBasedDependency = <D, P = any, E = any, C = any, K extends string = string>(
+const eventDependency = <D, P = any, E = any, C = any, K extends string = string>(
   dependencies: Record<K, D>,
-  getKey: EventBasedDependencyGetKey<P, E, C, K>
-): EventBasedDependency<D, P, E, C> => ({
-  type: 'EventBasedDependency',
+  getKey: EventDependencyGetKey<P, E, C, K>
+): EventDependency<D, P, E, C> => ({
+  type: 'EventDependency',
   dependencies,
   getKey: (payload: P, event: E, context: C) => getKey({ payload, event, context })
 })
 
-const resolveEventBasedDependencies = <D, P, E, C>(
+const apiGatewayEventDependency = <D, P = any, K extends string = string>(
+  dependencies: Record<K, D>,
+  getKey: EventDependencyGetKey<P, APIGatewayProxyEventV2, Context, K>
+): APIGatewayEventDependency<D, P, K> => ({
+  type: 'EventDependency',
+  dependencies,
+  getKey: (payload: P, event: APIGatewayProxyEventV2, context: Context) => getKey({ payload, event, context })
+})
+
+const resolveEventDependencies = <D, P, E, C>(
   dependencies: D,
   logger: Logger,
   payload: P,
@@ -70,12 +89,12 @@ const resolveEventBasedDependencies = <D, P, E, C>(
   context: C
 ): AppDependencyConverter<D> => {
   const updatedDependencies = Object.entries(dependencies).reduce((acc, [dependencyName, dependency]) => {
-    if (dependency?.type === 'EventBasedDependency') {
+    if (dependency?.type === 'EventDependency') {
       const key = dependency.getKey(payload, event, context)
       const eventDependency = dependency.dependencies[key]
       if (!eventDependency) {
         logger.warn(`could not extract event based dependency for ${dependencyName}`)
-        throw new EventBasedDependencyError(`No event based dependency found for '${dependencyName}'`)
+        throw new EventDependencyError(`No event based dependency found for '${dependencyName}'`)
       } else {
         logger.debug(`replacing '${dependencyName}' with event based dependency`)
         return { ...acc, [dependencyName]: eventDependency }
@@ -87,5 +106,5 @@ const resolveEventBasedDependencies = <D, P, E, C>(
   return updatedDependencies
 }
 
-export { resolveDependencies, resolveEventBasedDependencies, eventBasedDependency }
-export type { AppDependencyConverter, DependenciesConstructor, EventBasedDependency }
+export { resolveDependencies, resolveEventDependencies, eventDependency, apiGatewayEventDependency }
+export type { APIGatewayEventDependency, AppDependencyConverter, DependenciesConstructor, EventDependency }

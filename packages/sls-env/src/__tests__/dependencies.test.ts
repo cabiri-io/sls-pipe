@@ -1,5 +1,13 @@
-import { EventBasedDependencyError } from '../error/index'
-import { EventBasedDependency, Handler, environment, eventBasedDependency } from '..'
+import { APIGatewayProxyEventV2 } from 'aws-lambda'
+import { EventDependencyError } from '../error/index'
+import {
+  APIGatewayEventDependency,
+  EventDependency,
+  Handler,
+  apiGatewayEventDependency,
+  environment,
+  eventDependency
+} from '..'
 
 describe('serverless environment', () => {
   type MessageEvent = { message: string }
@@ -100,7 +108,7 @@ describe('serverless environment', () => {
     it('uses dependency based on the event property', async () => {
       type BuildMessage = (message: string, name: string) => string
       type BuildMessageDependencies = {
-        buildMessage: EventBasedDependency<BuildMessage>
+        buildMessage: EventDependency<BuildMessage>
       }
 
       const buildMessages: Record<string, BuildMessage> = {
@@ -115,7 +123,7 @@ describe('serverless environment', () => {
         EventPayload
       >()
         .global({
-          buildMessage: eventBasedDependency<BuildMessage, EventPayload, MessageEvent>(
+          buildMessage: eventDependency<BuildMessage, EventPayload, MessageEvent>(
             buildMessages,
             ({ event }) => event.message
           )
@@ -132,14 +140,14 @@ describe('serverless environment', () => {
       expect(response2).toBe('Using client2!')
 
       await expect(handler({ message: 'client3' }, { name: 'world' })).rejects.toThrow(
-        new EventBasedDependencyError("No event based dependency found for 'buildMessage'")
+        new EventDependencyError("No event based dependency found for 'buildMessage'")
       )
     })
 
     it('changes event based dependencies based on the payload', async () => {
       type BuildMessage = (message: string, name: string) => string
       type BuildMessageDependencies = {
-        buildMessage: EventBasedDependency<BuildMessage>
+        buildMessage: EventDependency<BuildMessage>
       }
 
       const buildMessages: Record<string, BuildMessage> = {
@@ -154,7 +162,7 @@ describe('serverless environment', () => {
         EventPayload
       >()
         .global({
-          buildMessage: eventBasedDependency<BuildMessage, EventPayload>(
+          buildMessage: eventDependency<BuildMessage, EventPayload>(
             buildMessages,
             ({ payload }) => payload.context.name
           )
@@ -171,8 +179,42 @@ describe('serverless environment', () => {
       expect(response2).toBe('Using client2!')
 
       await expect(handler({ message: 'client3' }, { name: 'world' })).rejects.toThrow(
-        new EventBasedDependencyError("No event based dependency found for 'buildMessage'")
+        new EventDependencyError("No event based dependency found for 'buildMessage'")
       )
+    })
+
+    it('changes event based dependencies based on the payload - APIGateway event', async () => {
+      type BuildMessage = (message: string, name: string) => string
+      type BuildMessageDependencies = {
+        buildMessage: APIGatewayEventDependency<BuildMessage, EventPayload>
+      }
+
+      const buildMessages: Record<string, BuildMessage> = {
+        'test.com': (_m, _n) => `Using client for test.com!`
+      }
+
+      const event = ({
+        headers: {
+          host: 'test.com'
+        }
+      } as unknown) as APIGatewayProxyEventV2
+
+      const handler = environment<
+        Handler<APIGatewayProxyEventV2, NameContext, string>,
+        any,
+        BuildMessageDependencies,
+        EventPayload
+      >()
+        .global({
+          buildMessage: apiGatewayEventDependency(buildMessages, ({ event }) => event.headers['host'] as string)
+        })
+        .app(({ payload: { event, context }, dependencies: { buildMessage } }) =>
+          buildMessage(event.message, context.name)
+        )
+        .successHandler(({ result }) => result as string).start
+
+      const response1 = await handler(event, { name: 'world' })
+      expect(response1).toBe('Using client for test.com!')
     })
   })
 })
