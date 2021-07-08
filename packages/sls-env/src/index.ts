@@ -12,7 +12,15 @@ import type { InvocationContext } from './invocation-context'
 import { ConfigConstructor, resolveConfig } from './config'
 import { ErrorHandler, ErrorParams, defaultErrorHandler } from './error-handler'
 import { SuccessHandler, SuccessParams } from './success-handler'
-import { DependenciesConstructor } from './dependencies'
+import {
+  AppDependencyConverter,
+  DependenciesConstructor,
+  EventDependency,
+  EventDependencyGetKey,
+  eventDependency,
+  resolveDependencies,
+  resolveEventDependencies
+} from './dependencies'
 import type {
   AppConstructor,
   AppParams,
@@ -148,6 +156,15 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
      *    module2: createModule2(config, logger)
      *  }
      * })
+     *
+     * @example
+     * global({
+     *  module: eventDependency({
+     *    'key1': createModule1(config.moduleConfig1),
+     *    'key2': createModule2(config.moduleConfig2)
+     *  },
+     *  ({ payload }) => payload.key, // resolves to 'key1' | 'key2'
+     * })
      */
     global(constructor) {
       dependencies = constructor
@@ -247,17 +264,14 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
           // resolve dependencies
           .then(({ logger, config, invocationId }) => {
             logger.trace('about to resolve dependencies')
-            if (!applicationDependencies) {
-              logger.debug('creating dependencies')
-              if (typeof dependencies === 'function' && dependencies instanceof Function) {
-                applicationDependencies = dependencies({ config, logger, invocationId })
-              } else {
-                logger.trace('about to resolve dependencies')
-                applicationDependencies = dependencies
-              }
+            if (applicationDependencies) {
+              return { logger, config, dependencies: applicationDependencies, invocationId }
             }
-
-            return { logger, config, dependencies: applicationDependencies, invocationId }
+            logger.debug('creating dependencies')
+            return resolveDependencies(dependencies, config, logger, invocationId).then(resolvedDependencies => {
+              applicationDependencies = resolvedDependencies
+              return { logger, config, dependencies: applicationDependencies, invocationId }
+            })
           })
           .then(({ logger, config, dependencies, invocationId }) => {
             // we use trace here because dependencies could have sensitive values
@@ -278,6 +292,22 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
           .then(({ logger, config, dependencies, payload, invocationId }) => {
             // we use trace here because dependencies could have sensitive values
             logger.trace({ payload }, 'created payload')
+            return { logger, config, dependencies, payload, invocationId }
+          })
+          // override event based dependencies
+          .then(({ logger, config, dependencies, payload, invocationId }) => {
+            logger.trace('about to resolve event based dependencies')
+            const updatedDependencies = resolveEventDependencies<D, P, Parameters<H>[0], Parameters<H>[1]>(
+              dependencies,
+              logger,
+              payload,
+              event,
+              context
+            )
+            return { logger, config, dependencies: updatedDependencies, payload, invocationId }
+          })
+          .then(({ logger, config, dependencies, payload, invocationId }) => {
+            logger.trace('resolved event based dependencies')
             return { logger, config, dependencies, payload, invocationId }
           })
           // invoke application
@@ -322,6 +352,8 @@ export type {
   Handler,
   SlsEnvironment,
   EnvironmentConfig,
+  EventDependency,
+  EventDependencyGetKey,
   Logger,
   InvocationIdConstructor,
   InvocationContextConstructor,
@@ -330,8 +362,9 @@ export type {
   SuccessParams,
   AppParams,
   ContextAppParams,
+  AppDependencyConverter,
   AppPayloadDependenciesParams,
   AppPayloadParams,
   AppConstructor as Application
 }
-export { environment, defaultLogger }
+export { environment, eventDependency, defaultLogger }

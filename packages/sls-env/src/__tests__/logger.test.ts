@@ -157,7 +157,7 @@ describe('serverless environment', () => {
     it('checks compatibilit with pino logger', done => {
       type Config = { message: string }
       type Dependencies = { message: string }
-      return environment<Handler<EmptyEvent, EmptyContext, void>, Config, Dependencies, string>({
+      environment<Handler<EmptyEvent, EmptyContext, void>, Config, Dependencies, string>({
         logger: { mutable: true }
       })
         .logger(pino)
