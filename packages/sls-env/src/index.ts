@@ -13,7 +13,13 @@ import type { InvocationContext } from './invocation-context'
 import { ConfigConstructor, resolveConfig } from './config'
 import { ErrorHandler, ErrorParams, defaultErrorHandler } from './error-handler'
 import { SuccessHandler, SuccessParams } from './success-handler'
-import { DependenciesConstructor, EventBasedDependencyConstruct, eventBasedDependency } from './dependencies'
+import {
+  AppDependencyConverter,
+  DependenciesConstructor,
+  EventBasedDependency,
+  eventBasedDependency,
+  resolveDependencies
+} from './dependencies'
 import type {
   AppConstructor,
   AppParams,
@@ -32,13 +38,7 @@ import type {
  * @template R - a result that application will return
  *
  */
-type SlsEnvironment<
-  H extends Handler<any, any, any>,
-  C,
-  D extends Record<string, any>,
-  P = HandlerPayload<H>,
-  R = ReturnType<H>
-> = {
+type SlsEnvironment<H extends Handler<any, any, any>, C, D, P = HandlerPayload<H>, R = ReturnType<H>> = {
   errorHandler: (handler: ErrorHandler<ReturnType<H>>) => SlsEnvironment<H, C, D, P, R>
   successHandler: (handler: SuccessHandler<R, ReturnType<H>>) => SlsEnvironment<H, C, D, P, R>
   global: (dependencies: DependenciesConstructor<C, D>) => SlsEnvironment<H, C, D, P, R>
@@ -163,7 +163,6 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
      *    'key2': createModule2(config.moduleConfig2)
      *  },
      *  ({ dependencies, payload }) => dependencies[payload.key],
-     *  { ignoreMissing: true })
      * })
      */
     global(constructor) {
@@ -264,17 +263,14 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
           // resolve dependencies
           .then(({ logger, config, invocationId }) => {
             logger.trace('about to resolve dependencies')
-            if (!applicationDependencies) {
-              logger.debug('creating dependencies')
-              if (typeof dependencies === 'function' && dependencies instanceof Function) {
-                applicationDependencies = dependencies({ config, logger, invocationId })
-              } else {
-                logger.trace('about to resolve dependencies')
-                applicationDependencies = dependencies
-              }
+            if (applicationDependencies) {
+              return { logger, config, dependencies: applicationDependencies, invocationId }
             }
-
-            return { logger, config, dependencies: applicationDependencies, invocationId }
+            logger.debug('creating dependencies')
+            return resolveDependencies(dependencies, config, logger, invocationId).then(resolvedDependencies => {
+              applicationDependencies = resolvedDependencies
+              return { logger, config, dependencies: applicationDependencies, invocationId }
+            })
           })
           .then(({ logger, config, dependencies, invocationId }) => {
             // we use trace here because dependencies could have sensitive values
@@ -301,36 +297,20 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
           .then(({ logger, config, dependencies, payload, invocationId }) => {
             logger.trace('about to resolve event based dependencies')
 
-            const hasEventBasedDependencies = Object.values(dependencies).some(d => d?.type === 'EventBasedDependency')
-            if (!hasEventBasedDependencies) {
-              return { logger, config, dependencies, payload, invocationId }
-            }
-
-            const updatedDependencies = Object.entries(applicationDependencies).reduce(
-              (acc, [dependencyName, dependency]) => {
-                if (dependency?.type === 'EventBasedDependency') {
-                  const eventDependency = (dependency as EventBasedDependencyConstruct<P, Parameters<H>[0]>).get(
-                    payload,
-                    event
-                  )
-                  if (!eventDependency) {
-                    logger.warn(`could not extract event based dependency for ${dependencyName}`)
-                    if (dependency.config.ignoreMissing) {
-                      // @ts-expect-error
-                      acc[dependencyName] = null
-                    } else {
-                      throw new EventBasedDependencyError(`No event based dependency found for '${dependencyName}'`)
-                    }
-                  } else {
-                    logger.debug(`replacing '${dependencyName}' with event based dependency`)
-                    // @ts-expect-error
-                    acc[dependencyName] = eventDependency
-                  }
+            const updatedDependencies = Object.entries(dependencies).reduce((acc, [dependencyName, dependency]) => {
+              if (dependency?.type === 'EventBasedDependency') {
+                const key = dependency.getKey(payload, event, context)
+                const eventDependency = dependency.dependencies[key]
+                if (!eventDependency) {
+                  logger.warn(`could not extract event based dependency for ${dependencyName}`)
+                  throw new EventBasedDependencyError(`No event based dependency found for '${dependencyName}'`)
+                } else {
+                  logger.debug(`replacing '${dependencyName}' with event based dependency`)
+                  return { ...acc, [dependencyName]: eventDependency }
                 }
-                return acc
-              },
-              { ...dependencies }
-            )
+              }
+              return acc
+            }, dependencies as AppDependencyConverter<D>)
             return { logger, config, dependencies: updatedDependencies, payload, invocationId }
           })
           .then(({ logger, config, dependencies, payload, invocationId }) => {
@@ -379,6 +359,7 @@ export type {
   Handler,
   SlsEnvironment,
   EnvironmentConfig,
+  EventBasedDependency,
   Logger,
   InvocationIdConstructor,
   InvocationContextConstructor,
@@ -387,6 +368,7 @@ export type {
   SuccessParams,
   AppParams,
   ContextAppParams,
+  AppDependencyConverter,
   AppPayloadDependenciesParams,
   AppPayloadParams,
   AppConstructor as Application

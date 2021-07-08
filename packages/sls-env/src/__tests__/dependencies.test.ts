@@ -1,5 +1,5 @@
 import { EventBasedDependencyError } from '../error/index'
-import { Handler, environment, eventBasedDependency } from '..'
+import { EventBasedDependency, Handler, environment, eventBasedDependency } from '..'
 
 describe('serverless environment', () => {
   type MessageEvent = { message: string }
@@ -15,6 +15,22 @@ describe('serverless environment', () => {
 
       return environment<Handler<MessageEvent, NameContext, string>, never, BuildMessageDependencies, EventPayload>()
         .global({ buildMessage: (message: string, name: string) => `${message} ${name}!` })
+        .app(({ payload: { event, context }, dependencies: { buildMessage } }) =>
+          buildMessage(event.message, context.name)
+        )
+        .successHandler(({ result }) => result as string)
+        .start({ message: 'hello' }, { name: 'world' })
+        .then(result => expect(result).toBe('hello world!'))
+    })
+
+    it('supports adding promise object with named dependencies', async () => {
+      type BuildMessage = (message: string, name: string) => string
+      type BuildMessageDependencies = {
+        buildMessage: BuildMessage
+      }
+
+      return environment<Handler<MessageEvent, NameContext, string>, never, BuildMessageDependencies, EventPayload>()
+        .global(Promise.resolve({ buildMessage: (message: string, name: string) => `${message} ${name}!` }))
         .app(({ payload: { event, context }, dependencies: { buildMessage } }) =>
           buildMessage(event.message, context.name)
         )
@@ -61,10 +77,30 @@ describe('serverless environment', () => {
         .then(result => expect(result).toBe('hello world of config!'))
     })
 
-    it('changes event based dependencies based on the event', async () => {
+    it('builds list of dependency in an async function constructor', async () => {
       type BuildMessage = (message: string, name: string) => string
       type BuildMessageDependencies = {
         buildMessage: BuildMessage
+      }
+      type Config = { hello: string }
+
+      return environment<Handler<MessageEvent, NameContext, string>, Config, BuildMessageDependencies, EventPayload>()
+        .config({ hello: 'config' })
+        .global(async ({ config }) => ({
+          buildMessage: (message: string, name: string) => `${message} ${name} of ${config.hello}!`
+        }))
+        .app(({ payload: { event, context }, dependencies: { buildMessage } }) =>
+          buildMessage(event.message, context.name)
+        )
+        .successHandler(({ result }) => result as string)
+        .start({ message: 'hello' }, { name: 'world' })
+        .then(result => expect(result).toBe('hello world of config!'))
+    })
+
+    it('uses dependency based on the event property', async () => {
+      type BuildMessage = (message: string, name: string) => string
+      type BuildMessageDependencies = {
+        buildMessage: EventBasedDependency<BuildMessage>
       }
 
       const buildMessages: Record<string, BuildMessage> = {
@@ -81,7 +117,7 @@ describe('serverless environment', () => {
         .global({
           buildMessage: eventBasedDependency<BuildMessage, EventPayload, MessageEvent>(
             buildMessages,
-            ({ event, dependencies }) => dependencies[event.message]
+            ({ event }) => event.message
           )
         })
         .app(({ payload: { event, context }, dependencies: { buildMessage } }) =>
@@ -103,7 +139,7 @@ describe('serverless environment', () => {
     it('changes event based dependencies based on the payload', async () => {
       type BuildMessage = (message: string, name: string) => string
       type BuildMessageDependencies = {
-        buildMessage: BuildMessage
+        buildMessage: EventBasedDependency<BuildMessage>
       }
 
       const buildMessages: Record<string, BuildMessage> = {
@@ -118,9 +154,9 @@ describe('serverless environment', () => {
         EventPayload
       >()
         .global({
-          buildMessage: eventBasedDependency<BuildMessage, EventPayload, MessageEvent>(
+          buildMessage: eventBasedDependency<BuildMessage, EventPayload>(
             buildMessages,
-            ({ payload, dependencies }) => dependencies[payload.context.name]
+            ({ payload }) => payload.context.name
           )
         })
         .app(({ payload: { event, context }, dependencies: { buildMessage } }) =>
@@ -137,28 +173,6 @@ describe('serverless environment', () => {
       await expect(handler({ message: 'client3' }, { name: 'world' })).rejects.toThrow(
         new EventBasedDependencyError("No event based dependency found for 'buildMessage'")
       )
-    })
-
-    it('changes event based dependencies based on the payload', async () => {
-      type BuildMessage = (message: string, name: string) => string
-      type BuildMessageDependencies = {
-        buildMessage: BuildMessage
-      }
-
-      const handler = environment<Handler<MessageEvent, NameContext, string>, any, BuildMessageDependencies, null>()
-        .config(() => ({ name: 'no client' }))
-        .global(({ config }) => ({
-          buildMessage: eventBasedDependency<BuildMessage>(
-            { client1: (_m, _n) => `Using client1!` },
-            ({ dependencies }) => dependencies[config.name],
-            { ignoreMissing: true }
-          )
-        }))
-        .app(({ dependencies: { buildMessage } }) => buildMessage?.('', '') || 'no buildMessage function')
-        .successHandler(({ result }) => result as string).start
-
-      const response2 = await handler({ message: 'hello' }, { name: 'client2' })
-      expect(response2).toBe('no buildMessage function')
     })
   })
 })

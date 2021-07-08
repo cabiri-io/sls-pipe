@@ -1,40 +1,66 @@
 import { Logger } from './logger'
+
 type DependenciesConstructorParams<C> = {
   config: C
   logger: Logger
   invocationId: string
 }
 
-type EventBasedDependencyGetterParams<D, P, E> = {
+type EventBasedDependencyGetKeyParams<P, E, C> = {
   event: E
   payload: P
-  dependencies: Record<string, D>
+  context: C
 }
 
-type EventBasedDependencyConfig = {
-  ignoreMissing?: boolean
-}
+type EventBasedDependencyGetKey<P, E, C, K> = (params: EventBasedDependencyGetKeyParams<P, E, C>) => K
 
-type EventBasedDependencyGetter<D, P, E> = (params: EventBasedDependencyGetterParams<D, P, E>) => D
-type EventBasedDependencyConstruct<P, E> = {
+/**
+ * D - dependency
+ * P - payload
+ * E - event
+ * C - context
+ */
+type EventBasedDependency<D, P = any, E = any, C = any, K extends string = string> = {
   type: 'EventBasedDependency'
-  config: EventBasedDependencyConfig
-  get: (payload: P, event: E) => any
+  dependencies: Record<K, D>
+  getKey: (p: P, e: E, c: C) => K
 }
 
-type DependenciesFunctionConstructor<C, D> = (params: DependenciesConstructorParams<C>) => D
-type DependenciesConstructor<C, D> = DependenciesFunctionConstructor<C, D> | D
+type AppDependencyConverter<T> = {
+  [k in keyof T]: T[k] extends EventBasedDependency<infer D> ? D : T[k]
+}
 
-const eventBasedDependency = <D, P = any, E = any>(
-  dependencies: Record<string, D>,
-  getter: EventBasedDependencyGetter<D, P, E>,
-  config: EventBasedDependencyConfig = {}
-): D =>
-  ((({
+type DependenciesFunctionConstructor<C, D> = (params: DependenciesConstructorParams<C>) => D | Promise<D>
+type DependenciesConstructor<C, D> = DependenciesFunctionConstructor<C, D> | D | Promise<D>
+
+const isFunction = <C, D>(v: unknown): v is DependenciesFunctionConstructor<C, D> =>
+  typeof v === 'function' && v instanceof Function
+
+const resolveDependencies = async <D, C>(
+  dependencies: DependenciesConstructor<C, D> | undefined | null,
+  config: C,
+  logger: Logger,
+  invocationId: string
+): Promise<D> => {
+  if (!dependencies) {
+    return {} as D
+  }
+
+  if (isFunction<C, D>(dependencies)) {
+    return dependencies({ config, logger, invocationId })
+  }
+  return dependencies
+}
+
+const eventBasedDependency = <D, P = any, E = any, C = any, K extends string = string>(
+  dependencies: Record<K, D>,
+  getKey: EventBasedDependencyGetKey<P, E, C, K>
+): EventBasedDependency<D, P, E, C> =>
+  ({
     type: 'EventBasedDependency',
-    config,
-    get: (payload: P, event: E) => getter({ payload, event, dependencies })
-  } as EventBasedDependencyConstruct<P, E>) as unknown) as D)
+    dependencies,
+    getKey: (payload: P, event: E, context: C) => getKey({ payload, event, context })
+  } as EventBasedDependency<D, P, E, C>)
 
-export { eventBasedDependency }
-export type { DependenciesConstructor, EventBasedDependencyConstruct }
+export { resolveDependencies, eventBasedDependency }
+export type { AppDependencyConverter, DependenciesConstructor, EventBasedDependency }

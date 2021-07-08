@@ -6,7 +6,7 @@ import { Logger } from '../logger'
 describe('environment config', () => {
   describe('invocation id', () => {
     it('allows to create a custom invocation id constructor', () => {
-      const logger = ({} as unknown) as Logger
+      const logger = {} as unknown as Logger
       const invocationId: InvocationIdConstructor<Handler<string, string, string>> = (event, context, _logger) =>
         `${event}-${context}`
 

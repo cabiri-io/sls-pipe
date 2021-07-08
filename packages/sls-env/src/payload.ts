@@ -18,7 +18,7 @@ type HandlerPayload<H> = H extends Handler<infer P, infer C, any> ? { event: P; 
  * @param event an handler event
  * @param context a handler context
  */
-const remapFunctionArgumentsToObject = <E, C, P>(event: E, context: C): P => (({ event, context } as unknown) as P)
+const remapFunctionArgumentsToObject = <E, C, P>(event: E, context: C): P => ({ event, context } as unknown as P)
 
 export type { PayloadConstructor, HandlerPayload }
 export { remapFunctionArgumentsToObject }

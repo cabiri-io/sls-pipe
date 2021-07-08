@@ -1,4 +1,5 @@
 import { Logger } from './logger'
+import { AppDependencyConverter } from './dependencies'
 
 type ContextAppParams = {
   logger: Logger
@@ -13,13 +14,13 @@ type AppPayloadParams<P> = {
 
 type AppPayloadDependenciesParams<P, D> = {
   payload: P
-  dependencies: D
+  dependencies: AppDependencyConverter<D>
 } & ContextAppParams
 
 type AppParams<P, C, D> = {
   payload: P
   config: C
-  dependencies: D
+  dependencies: AppDependencyConverter<D>
 } & ContextAppParams
 
 /**
