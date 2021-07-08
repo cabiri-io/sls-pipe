@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.13.0](https://github.com/cabiri-io/sls-pipe/compare/v0.12.0...v0.13.0) (2021-07-08)
+
+
+### Features
+
+* event based dependencies v2 ([#42](https://github.com/cabiri-io/sls-pipe/issues/42)) ([ba0c99d](https://github.com/cabiri-io/sls-pipe/commit/ba0c99d77f32a28590954048dc60d20c963411ab))
+
+
+
+
+
 # [0.12.0](https://github.com/cabiri-io/sls-pipe/compare/v0.11.0...v0.12.0) (2021-06-22)
 
 
