@@ -1,5 +1,3 @@
-import { APIGatewayProxyEventV2, Context } from 'aws-lambda'
-
 import { Logger } from './logger'
 import { EventDependencyError } from './error'
 
@@ -28,14 +26,6 @@ type EventDependency<D, P = any, E = any, C = any, K extends string = string> = 
   dependencies: Record<K, D>
   getKey: (p: P, e: E, c: C) => K
 }
-
-type APIGatewayEventDependency<D, P = any, K extends string = string> = EventDependency<
-  D,
-  P,
-  APIGatewayProxyEventV2,
-  Context,
-  K
->
 
 type AppDependencyConverter<T> = {
   [k in keyof T]: T[k] extends EventDependency<infer D> ? D : T[k]
@@ -72,15 +62,6 @@ const eventDependency = <D, P = any, E = any, C = any, K extends string = string
   getKey: (payload: P, event: E, context: C) => getKey({ payload, event, context })
 })
 
-const apiGatewayEventDependency = <D, P = any, K extends string = string>(
-  dependencies: Record<K, D>,
-  getKey: EventDependencyGetKey<P, APIGatewayProxyEventV2, Context, K>
-): APIGatewayEventDependency<D, P, K> => ({
-  type: 'EventDependency',
-  dependencies,
-  getKey: (payload: P, event: APIGatewayProxyEventV2, context: Context) => getKey({ payload, event, context })
-})
-
 const resolveEventDependencies = <D, P, E, C>(
   dependencies: D,
   logger: Logger,
@@ -106,5 +87,5 @@ const resolveEventDependencies = <D, P, E, C>(
   return updatedDependencies
 }
 
-export { resolveDependencies, resolveEventDependencies, eventDependency, apiGatewayEventDependency }
-export type { APIGatewayEventDependency, AppDependencyConverter, DependenciesConstructor, EventDependency }
+export { resolveDependencies, resolveEventDependencies, eventDependency }
+export type { AppDependencyConverter, DependenciesConstructor, EventDependency, EventDependencyGetKey }

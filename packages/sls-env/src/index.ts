@@ -13,11 +13,10 @@ import { ConfigConstructor, resolveConfig } from './config'
 import { ErrorHandler, ErrorParams, defaultErrorHandler } from './error-handler'
 import { SuccessHandler, SuccessParams } from './success-handler'
 import {
-  APIGatewayEventDependency,
   AppDependencyConverter,
   DependenciesConstructor,
   EventDependency,
-  apiGatewayEventDependency,
+  EventDependencyGetKey,
   eventDependency,
   resolveDependencies,
   resolveEventDependencies
@@ -354,6 +353,7 @@ export type {
   SlsEnvironment,
   EnvironmentConfig,
   EventDependency,
+  EventDependencyGetKey,
   Logger,
   InvocationIdConstructor,
   InvocationContextConstructor,
@@ -362,10 +362,9 @@ export type {
   SuccessParams,
   AppParams,
   ContextAppParams,
-  APIGatewayEventDependency,
   AppDependencyConverter,
   AppPayloadDependenciesParams,
   AppPayloadParams,
   AppConstructor as Application
 }
-export { environment, eventDependency, apiGatewayEventDependency, defaultLogger }
+export { environment, eventDependency, defaultLogger }
