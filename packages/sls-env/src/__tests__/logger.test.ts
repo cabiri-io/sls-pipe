@@ -81,7 +81,7 @@ describe('serverless environment', () => {
           expect(logMessageStore).toContain('log message')
         }))
 
-    it('allows to read log level from mutable logger', async () =>
+    it('allows to read log level on mutable logger', async () =>
       environment<Handler<EmptyEvent, EmptyContext, void>, never, void, void>({ logger: { mutable: true } })
         .logger(logger)
         .app(({ logger }) => {
@@ -89,7 +89,7 @@ describe('serverless environment', () => {
         })
         .start({}, {}))
 
-    it('allows to read/write log level from mutable logger', async () =>
+    it('allows to read/write log level on mutable logger', async () =>
       environment<Handler<EmptyEvent, EmptyContext, void>, never, void, void>({ logger: { mutable: true } })
         .logger(logger)
         .app(({ logger }) => {
