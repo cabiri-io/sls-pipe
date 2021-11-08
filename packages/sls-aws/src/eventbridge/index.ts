@@ -5,7 +5,7 @@ import { jsonEventBridgeEvent } from './json-eventbridge-event'
 import { jsonEventBridgeMessage } from './json-eventbridge-message'
 
 export type EventBridgeEventHandler = Handler<EventBridgeEvent<string, never>, Context, Promise<void>>
-export type EventBridgeMessageHandler = Handler<EventBridgeEvent<string, string>, Context, Promise<void>>
+export type EventBridgeMessageHandler = Handler<EventBridgeEvent<string, any>, Context, Promise<void>>
 
 export const eventBridgeEvent = <D, P extends EventBridgeEvent<string, any>, C = never>(
   config?: EnvironmentConfig<EventBridgeEventHandler>
