@@ -44,6 +44,8 @@ describe('serverless environment', () => {
       child(context: any) {
         return new TestLogger(context)
       }
+
+      level = 'info'
     }
 
     //@ts-expect-error
@@ -65,7 +67,7 @@ describe('serverless environment', () => {
   })
 
   describe('in context of environment', () => {
-    it('has default built in', () =>
+    it('has defaults built in', () =>
       environment<Handler<EmptyEvent, EmptyContext, void>, never, void, void>({ logger: { mutable: false } })
         .app(({ logger }) => expect(logger).toBeDefined())
         .start({}, {}))
@@ -78,6 +80,23 @@ describe('serverless environment', () => {
         .then(() => {
           expect(logMessageStore).toContain('log message')
         }))
+
+    it('allows to read log level on mutable logger', async () =>
+      environment<Handler<EmptyEvent, EmptyContext, void>, never, void, void>({ logger: { mutable: true } })
+        .logger(logger)
+        .app(({ logger }) => {
+          expect(logger.level).toBe('info')
+        })
+        .start({}, {}))
+
+    it('allows to read/write log level on mutable logger', async () =>
+      environment<Handler<EmptyEvent, EmptyContext, void>, never, void, void>({ logger: { mutable: true } })
+        .logger(logger)
+        .app(({ logger }) => {
+          logger.level = 'debug'
+          expect(logger.level).toBe('debug')
+        })
+        .start({}, {}))
 
     it('allows to inject custom context to logger during invocation', async () => {
       type CustomEvent = { id: string }
@@ -154,7 +173,7 @@ describe('serverless environment', () => {
         })
     })
 
-    it('checks compatibilit with pino logger', done => {
+    it('checks compatibility with pino logger', done => {
       type Config = { message: string }
       type Dependencies = { message: string }
       environment<Handler<EmptyEvent, EmptyContext, void>, Config, Dependencies, string>({

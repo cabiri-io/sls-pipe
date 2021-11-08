@@ -54,17 +54,24 @@ const createMutableLogger = (logger: Logger): Logger => {
   let wrapperedLogger = logger
 
   const handler = {
-    get(_: unknown, functionName: string) {
-      return (...args: Array<unknown>) => {
-        if (functionName === 'child' && wrapperedLogger?.[functionName]) {
-          //@ts-expect-error
-          wrapperedLogger = wrapperedLogger?.[functionName]?.(...args) ?? wrapperedLogger
-        } else if (wrapperedLogger[functionName]) {
-          return wrapperedLogger[functionName](...args)
-        } else {
-          return
+    get(_: unknown, property: string) {
+      if (typeof wrapperedLogger[property] === 'function') {
+        return (...args: Array<unknown>) => {
+          if (property === 'child' && wrapperedLogger?.[property]) {
+            //@ts-expect-error
+            wrapperedLogger = wrapperedLogger?.[property]?.(...args) ?? wrapperedLogger
+          } else if (wrapperedLogger[property]) {
+            return wrapperedLogger[property](...args)
+          } else {
+            return
+          }
         }
       }
+      return wrapperedLogger[property]
+    },
+    set(_: unknown, property: string, value: unknown) {
+      wrapperedLogger[property] = value
+      return true
     }
   }
 
