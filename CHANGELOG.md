@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.14.1](https://github.com/cabiri-io/sls-pipe/compare/v0.14.0...v0.14.1) (2021-11-06)
+
+
+### Bug Fixes
+
+* test description to trigger package publish ([67e94d3](https://github.com/cabiri-io/sls-pipe/commit/67e94d38127ea8bfe868aa1830e17e26a01a987f))
+
+
+
+
+
+# [0.14.0](https://github.com/cabiri-io/sls-pipe/compare/v0.13.0...v0.14.0) (2021-11-06)
+
+**Note:** Version bump only for package sls-pipe
+
+
+
+
+
 # [0.13.0](https://github.com/cabiri-io/sls-pipe/compare/v0.12.0...v0.13.0) (2021-07-08)
 
 
