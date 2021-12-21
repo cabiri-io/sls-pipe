@@ -16,8 +16,10 @@ import {
   AppDependencyConverter,
   DependenciesConstructor,
   EventDependency,
+  DependencyFactory,
   EventDependencyGetKey,
   eventDependency,
+  setDependencyFactory,
   resolveDependencies,
   resolveEventDependencies
 } from './dependencies'
@@ -353,6 +355,7 @@ export type {
   SlsEnvironment,
   EnvironmentConfig,
   EventDependency,
+  DependencyFactory,
   EventDependencyGetKey,
   Logger,
   InvocationIdConstructor,
@@ -367,4 +370,4 @@ export type {
   AppPayloadParams,
   AppConstructor as Application
 }
-export { environment, eventDependency, defaultLogger }
+export { environment, eventDependency, setDependencyFactory, defaultLogger }
