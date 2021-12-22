@@ -20,9 +20,9 @@ import {
   EventDependency,
   EventDependencyGetKey,
   eventDependency,
-  setDependencyFactory,
   resolveDependencies,
-  resolveEventDependencies
+  resolveEventDependencies,
+  setDependencyFactory
 } from './dependencies'
 import type {
   AppConstructor,
