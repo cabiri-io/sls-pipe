@@ -23,6 +23,7 @@ type EventDependencyGetKey<P, E, C, K> = (params: EventDependencyResolverParams<
 type ConditionalDependency<D, P = any, E = any, C = any, K extends string = string> =
   | EventDependency<D, P, E, C, K>
   | DependencyFactory<D, P, E, C>
+
 /**
  * D - dependency
  * P - payload
@@ -79,7 +80,7 @@ const eventDependency = <D, P = any, E = any, C = any, K extends string = string
 type DependencyFactoryResolver<D, P, E, C> = (params: EventDependencyResolverParams<P, E, C>) => D | Promise<D>
 
 type DependencyFactory<D, P = any, E = any, C = any> = {
-  type: 'DependencyFactory'
+  type: DependencyType.DependencyFactory
   dependencyFactory: DependencyFactoryResolver<D, P, E, C>
 }
 
@@ -125,5 +126,6 @@ export type {
   DependenciesConstructor,
   EventDependency,
   EventDependencyGetKey,
-  DependencyFactory
+  DependencyFactory,
+  DependencyFactoryResolver
 }
