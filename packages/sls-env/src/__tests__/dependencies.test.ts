@@ -1,5 +1,5 @@
 import { EventDependencyError } from '../error/index'
-import { EventDependency, DependencyFactory, Handler, environment, eventDependency, setDependencyFactory } from '..'
+import { DependencyFactory, EventDependency, Handler, environment, eventDependency, setDependencyFactory } from '..'
 
 describe('serverless environment', () => {
   type MessageEvent = { message: string }

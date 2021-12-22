@@ -15,9 +15,9 @@ import { SuccessHandler, SuccessParams } from './success-handler'
 import {
   AppDependencyConverter,
   DependenciesConstructor,
-  EventDependency,
   DependencyFactory,
   DependencyFactoryResolver,
+  EventDependency,
   EventDependencyGetKey,
   eventDependency,
   setDependencyFactory,
