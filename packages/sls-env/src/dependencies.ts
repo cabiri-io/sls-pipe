@@ -20,10 +20,6 @@ enum DependencyType {
 
 type EventDependencyGetKey<P, E, C, K> = (params: EventDependencyResolverParams<P, E, C>) => K
 
-type ConditionalDependency<D, P = any, E = any, C = any, K extends string = string> =
-  | EventDependency<D, P, E, C, K>
-  | DependencyFactory<D, P, E, C>
-
 /**
  * D - dependency
  * P - payload
@@ -37,7 +33,7 @@ type EventDependency<D, P = any, E = any, C = any, K extends string = string> = 
 }
 
 type AppDependencyConverter<T> = {
-  [k in keyof T]: T[k] extends ConditionalDependency<infer D> ? D : T[k]
+  [k in keyof T]: T[k] extends EventDependency<infer D> | DependencyFactory<infer D> ? D : T[k]
 }
 
 type DependenciesFunctionConstructor<C, D> = (params: DependenciesConstructorParams<C>) => D | Promise<D>
@@ -77,7 +73,7 @@ const eventDependency = <D, P = any, E = any, C = any, K extends string = string
  * E - event
  * C - context
  */
-type DependencyFactoryResolver<D, P, E, C> = (params: EventDependencyResolverParams<P, E, C>) => D | Promise<D>
+type DependencyFactoryResolver<D, P = any, E = any, C = any> = (params: EventDependencyResolverParams<P, E, C>) => D
 
 type DependencyFactory<D, P = any, E = any, C = any> = {
   type: DependencyType.DependencyFactory
