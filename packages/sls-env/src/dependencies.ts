@@ -77,14 +77,14 @@ type DependencyFactoryResolver<D, P = any, E = any, C = any> = (params: EventDep
 
 type DependencyFactory<D, P = any, E = any, C = any> = {
   type: DependencyType.DependencyFactory
-  dependencyFactory: DependencyFactoryResolver<D, P, E, C>
+  resolveDependency: DependencyFactoryResolver<D, P, E, C>
 }
 
-const setDependencyFactory = <D, P = any, E = any, C = any>(
-  dependencyFactory: DependencyFactoryResolver<D, P, E, C>
+const dependencyFactory = <D, P = any, E = any, C = any>(
+  resolveDependency: DependencyFactoryResolver<D, P, E, C>
 ): DependencyFactory<D, P, E, C> => ({
   type: DependencyType.DependencyFactory,
-  dependencyFactory
+  resolveDependency
 })
 
 const resolveEventDependencies = <D, P, E, C>(
@@ -97,18 +97,24 @@ const resolveEventDependencies = <D, P, E, C>(
   const updatedDependencies = Object.entries(dependencies).reduce((acc, [dependencyName, dependency]) => {
     switch (dependency.type) {
       case DependencyType.EventDependency:
-        const key = dependency.getKey(payload, event, context)
-        const eventDependency = dependency.dependencies[key]
-        if (!eventDependency) {
+        const eventDependency = dependency as EventDependency<D, P, E, C>
+        const key = eventDependency.getKey(payload, event, context)
+        const resolvedEventDependency = eventDependency.dependencies[key]
+        if (!resolvedEventDependency) {
           logger.warn(`could not extract event based dependency for ${dependencyName}`)
           throw new EventDependencyError(`No event based dependency found for '${dependencyName}'`)
         } else {
           logger.debug(`replacing '${dependencyName}' with event based dependency`)
-          return { ...acc, [dependencyName]: eventDependency }
+          return { ...acc, [dependencyName]: resolvedEventDependency }
         }
       case DependencyType.DependencyFactory:
+        const dependencyFactory = dependency as DependencyFactory<D, P, E, C>
         logger.debug(`replacing '${dependencyName}' with factory based dependency`)
-        return { ...acc, [dependencyName]: dependency.dependencyFactory({ payload, event, context }) }
+        try {
+          return { ...acc, [dependencyName]: dependencyFactory.resolveDependency({ payload, event, context }) }
+        } catch (error: unknown) {
+          throw new EventDependencyError((error as Error).message)
+        }
     }
     return acc
   }, dependencies as AppDependencyConverter<D>)
@@ -116,7 +122,7 @@ const resolveEventDependencies = <D, P, E, C>(
   return updatedDependencies
 }
 
-export { resolveDependencies, resolveEventDependencies, eventDependency, setDependencyFactory }
+export { resolveDependencies, resolveEventDependencies, eventDependency, dependencyFactory }
 export type {
   AppDependencyConverter,
   DependenciesConstructor,

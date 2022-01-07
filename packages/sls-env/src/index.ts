@@ -22,7 +22,7 @@ import {
   eventDependency,
   resolveDependencies,
   resolveEventDependencies,
-  setDependencyFactory
+  dependencyFactory
 } from './dependencies'
 import type {
   AppConstructor,
@@ -372,4 +372,4 @@ export type {
   AppPayloadParams,
   AppConstructor as Application
 }
-export { environment, eventDependency, setDependencyFactory, defaultLogger }
+export { environment, eventDependency, dependencyFactory, defaultLogger }
