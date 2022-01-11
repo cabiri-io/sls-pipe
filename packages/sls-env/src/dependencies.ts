@@ -1,5 +1,5 @@
 import { Logger } from './logger'
-import { EventDependencyError } from './error'
+import { DependencyNotFoundError } from './error'
 
 type DependenciesConstructorParams<C> = {
   config: C
@@ -73,7 +73,9 @@ const eventDependency = <D, P = any, E = any, C = any, K extends string = string
  * E - event
  * C - context
  */
-type DependencyFactoryResolver<D, P = any, E = any, C = any> = (params: EventDependencyResolverParams<P, E, C>) => D
+type DependencyFactoryResolver<D, P = any, E = any, C = any> = (
+  params: EventDependencyResolverParams<P, E, C>
+) => D | undefined | null
 
 type DependencyFactory<D, P = any, E = any, C = any> = {
   type: DependencyType.DependencyFactory
@@ -102,7 +104,7 @@ const resolveEventDependencies = <D, P, E, C>(
         const resolvedEventDependency = eventDependency.dependencies[key]
         if (!resolvedEventDependency) {
           logger.warn(`could not extract event based dependency for ${dependencyName}`)
-          throw new EventDependencyError(`No event based dependency found for '${dependencyName}'`)
+          throw new DependencyNotFoundError(`EventDependency '${dependencyName}' could not be resolved`, dependencyName)
         } else {
           logger.debug(`replacing '${dependencyName}' with event based dependency`)
           return { ...acc, [dependencyName]: resolvedEventDependency }
@@ -110,10 +112,17 @@ const resolveEventDependencies = <D, P, E, C>(
       case DependencyType.DependencyFactory:
         const dependencyFactory = dependency as DependencyFactory<D, P, E, C>
         logger.debug(`replacing '${dependencyName}' with factory based dependency`)
-        try {
-          return { ...acc, [dependencyName]: dependencyFactory.resolveDependency({ payload, event, context }) }
-        } catch (error: unknown) {
-          throw new EventDependencyError((error as Error).message)
+
+        const resolvedDep = dependencyFactory.resolveDependency({ payload, event, context })
+
+        if (!resolvedDep) {
+          logger.warn(`could not extract factory based dependency for ${dependencyName}`)
+          throw new DependencyNotFoundError(
+            `Factory-based dependency '${dependencyName}' could not be resolved`,
+            dependencyName
+          )
+        } else {
+          return { ...acc, [dependencyName]: resolvedDep }
         }
     }
     return acc
