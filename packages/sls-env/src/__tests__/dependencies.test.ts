@@ -1,11 +1,11 @@
 import {
   DependencyFactory,
+  DependencyFactoryResolver,
   EventDependency,
   Handler,
-  environment,
-  eventDependency,
   dependencyFactory,
-  DependencyFactoryResolver
+  environment,
+  eventDependency
 } from '..'
 import { DependencyNotFoundError } from '../error'
 
