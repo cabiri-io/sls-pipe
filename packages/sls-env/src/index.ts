@@ -15,8 +15,11 @@ import { SuccessHandler, SuccessParams } from './success-handler'
 import {
   AppDependencyConverter,
   DependenciesConstructor,
+  DependencyFactory,
+  DependencyFactoryResolver,
   EventDependency,
   EventDependencyGetKey,
+  dependencyFactory,
   eventDependency,
   resolveDependencies,
   resolveEventDependencies
@@ -353,6 +356,8 @@ export type {
   SlsEnvironment,
   EnvironmentConfig,
   EventDependency,
+  DependencyFactory,
+  DependencyFactoryResolver,
   EventDependencyGetKey,
   Logger,
   InvocationIdConstructor,
@@ -367,4 +372,4 @@ export type {
   AppPayloadParams,
   AppConstructor as Application
 }
-export { environment, eventDependency, defaultLogger }
+export { environment, eventDependency, dependencyFactory, defaultLogger }
