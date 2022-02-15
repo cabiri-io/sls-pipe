@@ -1,4 +1,4 @@
-import { EnvironmentConfig, Handler, SlsEnvironment, environment } from '@cabiri-io/sls-env'
+import { EnvironmentConfig, Handler, SlsEnvironment, environment } from '@cabiri/sls-env'
 import type { Context, SQSEvent } from 'aws-lambda'
 import { response } from '../reponse/response-or-error'
 import { jsonSQSMessage } from './json-sqs-message'

@@ -1,6 +1,6 @@
 import { APIGatewayProxyEventV2, Context } from 'aws-lambda'
 
-import { EventDependency, EventDependencyGetKey } from '@cabiri-io/sls-env'
+import { EventDependency, EventDependencyGetKey } from '@cabiri/sls-env'
 
 type APIGatewayEventDependency<D, P = any, K extends string = string> = EventDependency<
   D,

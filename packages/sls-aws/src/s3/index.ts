@@ -1,4 +1,4 @@
-import { EnvironmentConfig, Handler, SlsEnvironment, environment } from '@cabiri-io/sls-env'
+import { EnvironmentConfig, Handler, SlsEnvironment, environment } from '@cabiri/sls-env'
 import type { Context, S3Event, S3EventRecord } from 'aws-lambda'
 import { response } from '../reponse/response-or-error'
 import { s3Record as _s3Record } from './s3-record'

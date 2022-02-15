@@ -1,4 +1,4 @@
-import { Logger } from '@cabiri-io/sls-env'
+import { Logger } from '@cabiri/sls-env'
 import { createSuccessResponse } from '../index'
 
 describe('structure response', () => {

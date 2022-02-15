@@ -1,4 +1,4 @@
-import { SuccessParams } from '@cabiri-io/sls-env'
+import { SuccessParams } from '@cabiri/sls-env'
 
 const responseOrError = <T>({ result }: SuccessParams<T>): T | never => {
   if (result) {

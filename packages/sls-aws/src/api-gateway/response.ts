@@ -1,5 +1,5 @@
 import type { APIGatewayProxyStructuredResultV2 } from 'aws-lambda'
-import type { SuccessParams } from '@cabiri-io/sls-env'
+import type { SuccessParams } from '@cabiri/sls-env'
 
 type StructuredResult<T, R> = APIGatewayProxyStructuredResultV2 & { mapper?: (t: T) => R }
 

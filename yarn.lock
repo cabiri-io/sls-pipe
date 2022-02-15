@@ -481,7 +481,7 @@
   resolved "https://registry.npmjs.org/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@cabiri-io/sls-env@file:packages/sls-env":
+"@cabiri/sls-env@file:packages/sls-env":
   version "0.13.0"
   dependencies:
     "@types/pino" "^6.3.5"

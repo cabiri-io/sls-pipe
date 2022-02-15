@@ -1,4 +1,4 @@
-import { EnvironmentConfig, Handler, SlsEnvironment, environment } from '@cabiri-io/sls-env'
+import { EnvironmentConfig, Handler, SlsEnvironment, environment } from '@cabiri/sls-env'
 import type { Context, EventBridgeEvent } from 'aws-lambda'
 import { response } from '../reponse/response-or-error'
 import { jsonEventBridgeEvent } from './json-eventbridge-event'

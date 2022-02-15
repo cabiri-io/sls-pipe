@@ -1,4 +1,4 @@
-import { EnvironmentConfig, Handler, SlsEnvironment, environment } from '@cabiri-io/sls-env'
+import { EnvironmentConfig, Handler, SlsEnvironment, environment } from '@cabiri/sls-env'
 import type { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from 'aws-lambda'
 import { bodyToPayload } from './payload'
 import { createSuccessResponse } from './response'

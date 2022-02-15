@@ -1,5 +1,5 @@
 import { APIGatewayProxyEventV2 } from 'aws-lambda'
-import { Handler, environment } from '@cabiri-io/sls-env'
+import { Handler, environment } from '@cabiri/sls-env'
 
 import { APIGatewayEventDependency, apiGatewayEventDependency } from '../dependency'
 
