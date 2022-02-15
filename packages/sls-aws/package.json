@@ -9,16 +9,17 @@
     "directory": "packages/sls-aws"
   },
   "publishConfig": {
-    "access": "restricted",
-    "registry": "https://npm.pkg.github.com/"
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   },
   "homepage": "https://github.com/cabiri-io/sls-pipe#readme",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@cabiri-io/sls-env": "file:../sls-env"
+    "@cabiri/sls-env": "file:../sls-env"
   },
   "optionalDependencies": {
     "@types/aws-lambda": "^8.10.59"
-  }
+  },
+  "gitHead": "61b503bf9413dddd202bfa0710e7c89c18d9d2e4"
 }

@@ -9,10 +9,11 @@
     "directory": "packages/sls-app"
   },
   "publishConfig": {
-    "access": "restricted",
-    "registry": "https://npm.pkg.github.com/"
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   },
   "homepage": "https://github.com/cabiri-io/sls-pipe#readme",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts"
+  "types": "dist/index.d.ts",
+  "gitHead": "61b503bf9413dddd202bfa0710e7c89c18d9d2e4"
 }
