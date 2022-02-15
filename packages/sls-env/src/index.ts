@@ -339,7 +339,7 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
             logger?.trace?.({ invocationId, error }, 'error trace')
             return errorHandler({ error, context: { invocationId, logger } })
           })
-          // clean up invocation context
+          // clean up invocation context by deleting event
           .finally(() => {
             const { logger } = invocationContext.get(event) ?? {}
             logger?.debug?.('about to clean current invocation')

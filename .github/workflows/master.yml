@@ -21,6 +21,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
+          token: ${{ secrets.PAT_GITHUB }}
 
       - name: Configure CI Git User
         run: |
@@ -54,9 +55,23 @@ jobs:
         run: yarn test
         env:
           CI: true
-# at the moment it is being release manually
-# - name: publish packages
-#   run: yarn publish:ci
-#   env:
-#     CI: true
-#     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor}}@users.noreply.github.com"
+
+      - name: Updated packages
+        run: |
+          npx lerna updated
+
+      - name: Version packages
+        run: |
+          npx lerna version --no-private --create-release github --message "chore(release): publish [skip ci]" --conventional-commits --yes
+        env:
+          GH_TOKEN: ${{ secrets.PAT_GITHUB }}
+
+      - name: Publish packages
+        run: npx lerna publish from-git --yes --no-verify-access
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
