@@ -25,8 +25,8 @@ jobs:
 
       - name: Configure CI Git User
         run: |
-          git config --global user.email octobot@github.com
-          git config --global user.name GitHub Actions
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor}}@users.noreply.github.com"
 
       - name: Use Node.js 12.x
         uses: actions/setup-node@v1
@@ -55,11 +55,6 @@ jobs:
         run: yarn test
         env:
           CI: true
-
-      - name: Configure git
-        run: |
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor}}@users.noreply.github.com"
 
       - name: Updated packages
         run: |
