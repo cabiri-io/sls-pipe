@@ -10,10 +10,10 @@
   },
   "publishConfig": {
     "access": "public",
-    "registry": "https://registry.npmjs.org"
+    "registry": "https://registry.npmjs.com"
   },
   "homepage": "https://github.com/cabiri-io/sls-pipe#readme",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "gitHead": "61b503bf9413dddd202bfa0710e7c89c18d9d2e4"
+  "gitHead": "aa7cfbac2b84adad9b536f8efedfde9446389056"
 }
