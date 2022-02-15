@@ -10,13 +10,13 @@
   },
   "publishConfig": {
     "access": "public",
-    "registry": "https://registry.npmjs.com"
+    "registry": "https://registry.npmjs.org"
   },
   "homepage": "https://github.com/cabiri-io/sls-pipe#readme",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@cabiri/sls-env": "^0.16.4"
+    "@cabiri/sls-env": "file:../sls-env"
   },
   "optionalDependencies": {
     "@types/aws-lambda": "^8.10.59"
