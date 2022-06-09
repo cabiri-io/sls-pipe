@@ -45,7 +45,7 @@ describe('serverless environment', () => {
         return new TestLogger(context)
       }
 
-      level = 'info'
+      level = 'info' as const
     }
 
     //@ts-expect-error
@@ -56,7 +56,6 @@ describe('serverless environment', () => {
     it('creates a mutable logger', () => {
       const mutableLogger = createMutableLogger(logger)
 
-      //@ts-expect-error
       mutableLogger.child?.('test')
       mutableLogger.debug('message')
 
@@ -176,6 +175,7 @@ describe('serverless environment', () => {
     it('checks compatibility with pino logger', done => {
       type Config = { message: string }
       type Dependencies = { message: string }
+
       environment<Handler<EmptyEvent, EmptyContext, void>, Config, Dependencies, string>({
         logger: { mutable: true }
       })
