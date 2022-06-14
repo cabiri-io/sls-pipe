@@ -2,6 +2,7 @@ type LogLevel = 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace'
 
 interface LogFn {
   <T extends Record<string, unknown>>(obj: T, msg?: string, ...args: Array<any>): void
+  (obj: any, msg?: string, ...args: Array<any>): void
   (msg: string, ...args: Array<any>): void
 }
 
