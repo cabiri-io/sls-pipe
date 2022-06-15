@@ -1,6 +1,6 @@
 {
   "name": "@cabiri/sls-env",
-  "version": "0.17.0",
+  "version": "0.17.1",
   "author": "Cabiri <opensource@cabiri.io>",
   "license": "UNLICENSED",
   "description": "Environment to build your serverless applications",

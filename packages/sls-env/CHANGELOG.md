@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.17.1](https://github.com/cabiri-io/sls-pipe/compare/v0.17.0...v0.17.1) (2022-06-15)
+
+**Note:** Version bump only for package @cabiri/sls-env
+
+
+
+
+
 # [0.17.0](https://github.com/cabiri-io/sls-pipe/compare/v0.16.5...v0.17.0) (2022-06-10)
 
 
