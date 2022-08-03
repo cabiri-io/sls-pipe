@@ -2,7 +2,7 @@
   "name": "@cabiri/sls-app",
   "version": "0.17.0",
   "author": "Cabiri <opensource@cabiri.io>",
-  "license": "GPL-3.0",
+  "license": "GPL",
   "repository": {
     "type": "git",
     "url": "https://github.com/cabiri-io/sls-pipe.git",
