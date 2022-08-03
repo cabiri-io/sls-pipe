@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.18.0](https://github.com/cabiri-io/sls-pipe/compare/v0.17.1...v0.18.0) (2022-08-03)
+
+
+### Features
+
+* add GPL license ([#60](https://github.com/cabiri-io/sls-pipe/issues/60)) ([63941d5](https://github.com/cabiri-io/sls-pipe/commit/63941d50e8faa0da12dfbe416a5d1cee3a15d912))
+
+
+
+
+
 # [0.17.0](https://github.com/cabiri-io/sls-pipe/compare/v0.16.5...v0.17.0) (2022-06-10)
 
 **Note:** Version bump only for package @cabiri/sls-app
