@@ -1,5 +1,5 @@
 {
-  "license": "UNLICENSED",
+  "license": "GPL",
   "engines": {
     "node": ">=0.10"
   },

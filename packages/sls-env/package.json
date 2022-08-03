@@ -2,7 +2,7 @@
   "name": "@cabiri/sls-env",
   "version": "0.17.1",
   "author": "Cabiri <opensource@cabiri.io>",
-  "license": "UNLICENSED",
+  "license": "GPL",
   "description": "Environment to build your serverless applications",
   "repository": {
     "type": "git",
