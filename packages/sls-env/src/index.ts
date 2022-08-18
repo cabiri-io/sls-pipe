@@ -206,12 +206,12 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
           .then(() => {
             if (!isLoggerInitialised) {
               applicationLogger = createLogger(logLevel)(applicationLoggerConstructor)
-            }
 
-            if (isLogMutable) {
-              const mutableLogger = createMutableLogger(applicationLogger)
+              if (isLogMutable) {
+                applicationLogger = createMutableLogger(applicationLogger)
+              }
 
-              return { logger: mutableLogger }
+              isLoggerInitialised = true
             }
 
             return { logger: applicationLogger }
