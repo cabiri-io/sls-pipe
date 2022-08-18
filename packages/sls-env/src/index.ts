@@ -67,7 +67,6 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
   const logLevel = logger.level ?? 'info'
   const isLogMutable = logger?.mutable ?? true
   const logInvocationContext = logger?.invocationContext ?? defaultInvodationContext
-  let isLoggerInitialised = false
 
   // ------------------------------------
   // init defaults
@@ -204,14 +203,12 @@ const environment = <H extends Handler<any, any, any>, C, D, P = HandlerPayload<
         Promise.resolve()
           // initialise logger
           .then(() => {
-            if (!isLoggerInitialised) {
+            if (!applicationLogger) {
               applicationLogger = createLogger(logLevel)(applicationLoggerConstructor)
 
               if (isLogMutable) {
                 applicationLogger = createMutableLogger(applicationLogger)
               }
-
-              isLoggerInitialised = true
             }
 
             return { logger: applicationLogger }
